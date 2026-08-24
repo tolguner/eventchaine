@@ -1,9 +1,11 @@
-/**
- * GERÇEK BLOCKCHAIN İŞLEMLERİ İÇİN DEPLOYMENT REHBERİ
- * Bu adımları takip ederek projeyi tam bir Web3 uygulamasına dönüştürün
- */
+# Blockchain Deployment Rehberi
 
-# 🚀 Blockchain Deployment Rehberi
+> **Bu bir yol haritasıdır, tamamlanmış bir kurulumun kaydı değil.** Aşağıdaki
+> adımlar proje kapsamında **uygulanmadı**: ne SUI Move modülü ne de Polygon
+> kontratı deploy edildi. Projenin blockchain tarafında bugün nelerin gerçek,
+> nelerin simülasyon olduğu için [README](./README.md#blockchain-entegrasyonunun-gerçek-durumu)
+> bölümüne bakın. Sertifikaların gerçek NFT olarak mint edilmesi için 4. adımdaki
+> Move modülünün deploy edilmesi gerekir.
 
 ## 1️⃣ Environment Variables Ayarlama
 
@@ -57,6 +59,11 @@ curl --location --request POST 'https://faucet.testnet.sui.io/gas' \
 ```
 
 ## 3️⃣ Polygon Smart Contract Deploy (Opsiyonel)
+
+> ⚠️ Bu bölüm şu an olduğu gibi çalışmaz. `contracts/ProofOfPresenceSBT.sol`,
+> OpenZeppelin v5'te kaldırılmış olan `utils/Counters.sol`'ü import ettiği için
+> `npx hardhat compile` hata verir. Ayrıca aşağıda geçen `scripts/deploy.js`
+> dosyası depoda mevcut değildir; yazılması gerekir.
 
 ### Gereksinimler
 - MetaMask cüzdanı
@@ -178,16 +185,22 @@ npm run dev
    - Sui Wallet'ı seçin ve bağlayın
 
 2. **Admin Paneli**
-   - Admin hesabıyla giriş yapın: tolgaolguner1@gmail.com / tolga123
+   - Giriş yalnızca cüzdanla yapılır; e-posta/şifre ile giriş yoktur.
+   - Cüzdanı bağladıktan sonra `/profile` sayfasından e-postanızı
+     `app/api/auth/wallet` içindeki `ADMIN_EMAILS` listesindeki adresle
+     değiştirin, çıkıp yeniden bağlanın; rolünüz `admin` olur.
    - `/admin` sayfasına gidin
 
-3. **Gerçek NFT Mint Test**
+3. **NFT Mint Test**
    - Admin panelinde "Etkinlikler" sekmesine gidin
    - Bir etkinlik seçin
    - "Sertifika Dağıt" butonuna tıklayın
    - Cüzdan bağlı olmalı!
    - Transaction'ı onaylayın
-   - ✅ TX hash'i console'da görünecek
+   - TX hash'i console'da görünecek
+   - ⚠️ `NEXT_PUBLIC_SUI_PACKAGE_ID` hâlâ `0x0` ise gerçek bir NFT mint
+     edilmez; alıcıya 1 MIST gönderen bir demo transaction imzalanır.
+     Gerçek mint için önce 4. adımdaki Move modülü deploy edilmelidir.
 
 4. **Blockchain Explorer'da Doğrulama**
    - Console'da görünen TX hash'i kopyalayın
@@ -307,5 +320,5 @@ console.log('Explorer URL:', explorerUrl);
 
 ---
 
-**Tebrikler! 🎉**
-Artık tam fonksiyonel bir Web3 uygulamanız var!
+Bu listedeki adımların tamamı uygulandığında sertifikalar gerçek Soulbound
+NFT olarak mint edilir. Projenin teslim edildiği hâlde bu adımlar tamamlanmamıştır.

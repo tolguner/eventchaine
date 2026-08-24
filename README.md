@@ -1,739 +1,232 @@
-# EventChain - Web3 Etkinlik Yönetim Platformu
+# EventChain — Web3 Etkinlik Yönetim Platformu
 
-SUI Blockchain üzerinde doğrulanabilir, devredilemez (Soulbound NFT) etkinlik katılım sertifikaları sunan tam özellikli Web3 etkinlik platformu.
+Etkinlik kaydı, QR ile yoklama ve katılım sertifikası akışını tek yerde toplayan
+Next.js uygulaması. Kimlik doğrulama SUI cüzdanı ile yapılır; sertifikalar
+Soulbound (devredilemez) NFT olarak tasarlanmıştır.
 
-## 🚀 Özellikler
+Işık Üniversitesi'nde blockchain dersi kapsamında hazırlanmış, teslim edilmiş bir
+dönem projesidir. Aktif geliştirilen bir ürün değildir.
 
-### 🎫 Etkinlik Yönetimi
-- ✅ **Tam Özellikli Etkinlik Sistemi**: Oluşturma, düzenleme, silme
-- 📅 **Kapsamlı Etkinlik Bilgileri**: Tarih, konum, kapasite, fiyatlandırma
-- 🏷️ **Etiket & Kategori Sistemi**: Kolay arama ve filtreleme
-- 🖼️ **Görsel Yönetimi**: Etkinlik kapak görselleri
-- 💰 **Çoklu Para Birimi Desteği**: SUI, USDC, USDT, Ücretsiz
+## Durum
 
-### 👥 Kullanıcı Deneyimi
-- 🔐 **Güvenli Kimlik Doğrulama**: Session-based auth sistemi
-- 💼 **Profil Yönetimi**: Kullanıcı bilgileri ve öğrenci detayları
-- 🎟️ **Kayıt Sistemi**: Etkinliklere online ön kayıt
-- 📱 **QR Bilet**: Her kayıt için güvenli, benzersiz QR kod
-- 🎓 **Sertifika Görüntüleme**: Blockchain tabanlı başarı sertifikaları
+Uygulama kurulup çalıştırılabilir durumda: cüzdanla giriş, etkinlik listeleme,
+kayıt olma, QR bilet üretme, QR ile check-in ve sertifika kayıtları veritabanı
+üzerinde uçtan uca çalışıyor.
 
-### 🔗 Web3 Entegrasyonu (TAMAMEN İMPLEMENTE EDİLDİ ✅)
-- 🪙 **SUI Cüzdan Desteği**: Sui Wallet, Suiet, Wallet Standard protocol
-- 🌐 **Multi-Chain Hazır**: SUI (ana) + Polygon EVM desteği
-- 💎 **Gerçek Soulbound NFT**: SUI blockchain'de gerçek NFT mint'leme
-- 💸 **Gerçek Blockchain Ödemeleri**: SUI token transfer ve balance kontrolü
-- 🔍 **On-chain Doğrulama**: SuiClient ile blockchain'den veri okuma
-- 📦 **IPFS Entegrasyonu**: NFT.Storage ile metadata ve görsel depolama
-- 🔐 **Transaction Signing**: Cüzdan ile gerçek transaction imzalama
-- 🌐 **Explorer Integration**: Tüm işlemler için blockchain explorer linkleri
+Blockchain tarafı ise **kısmen gerçek, kısmen simülasyondur.** Cüzdan bağlama,
+bakiye okuma, transaction imzalama ve SUI transferi gerçek zincir üzerinde
+çalışır; ancak projeye ait bir SUI Move modülü **hiçbir zaman deploy edilmedi.**
+Bu yüzden sertifikalar gerçek bir NFT olarak mint edilmez. Ayrıntılar için
+[Blockchain entegrasyonunun gerçek durumu](#blockchain-entegrasyonunun-gerçek-durumu)
+bölümüne bakın.
 
-### 📊 Admin Paneli
-- 🎯 **Dashboard**: Gerçek zamanlı istatistikler ve analizler
-- 🎪 **Etkinlik Yönetimi**: CRUD operasyonları ve katılımcı takibi
-- 📱 **QR Tarayıcı**: Canlı check-in sistemi
-- 🏆 **Sertifika Dağıtımı**: Otomatik ve toplu NFT dağıtımı
-- ✍️ **Blog Yönetimi**: İçerik oluşturma ve düzenleme
-- 👁️ **Görüntülenme Takibi**: Otomatik blog istatistikleri
+## Özellikler
 
-### 📝 Blog Sistemi
-- ✍️ **Tam Özellikli CMS**: Blog yazıları oluşturma ve düzenleme
-- 🏷️ **Kategori Sistemi**: İçerik organizasyonu
-- 👁️ **Otomatik Görüntülenme Sayacı**: Her açılışta +1
-- 🎨 **Zengin İçerik**: Markdown destekli yazılar
+**Çalışanlar**
 
-### ✅ Check-in Sistemi
-- 📱 **QR Kod Tarama**: Gerçek zamanlı katılım doğrulama
-- 🔔 **Beacon Proximity**: BLE beacon desteği (hazır altyapı)
-- ⚡ **Anlık Feedback**: Başarılı/başarısız check-in bildirimleri
-- 🎓 **Otomatik Sertifika**: Etkinlik bitiminde otomatik NFT verme
+- SUI cüzdanı ile giriş/kayıt (Sui Wallet, Suiet, Wallet Standard)
+- Etkinlik listeleme ve detay sayfası; başlık/açıklama araması ve
+  ücretsiz/ücretli filtresi
+- Etkinliğe kayıt; kapasite ve mükerrer kayıt kontrolü
+- HMAC-SHA256 imzalı QR bilet üretimi
+- Kamera ile QR okuyup check-in (admin paneli)
+- Etkinlik bitiminde check-in yapanlara toplu sertifika kaydı
+- Sertifika numarası veya tx hash ile herkese açık doğrulama sayfası (`/verify`)
+- Blog listeleme, detay ve otomatik görüntülenme sayacı
+- Profil yönetimi (ad, e-posta, öğrenci no, bölüm, sınıf)
+- Admin panosu: kayıt/check-in listeleri ve sayaçlar
+- Açık/koyu tema
 
-## 🛠️ Teknoloji Stack
+**Eksik ya da yarım kalanlar**
 
-### Frontend
-- **Framework**: Next.js 14 (App Router)
-- **UI Library**: React 18
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React Hooks & Context API
-- **Data Fetching**: @tanstack/react-query
+- Admin panelindeki **etkinlik ve blog oluşturma / düzenleme / silme yalnızca
+  ekrandaki listeyi değiştirir**, veritabanına yazmaz. Sayfa yenilenince eski
+  hâline döner. `POST /api/events` uç noktası var ama arayüz onu çağırmıyor;
+  güncelleme ve silme uçları hiç yazılmamış.
+- Ödeme akışı yalnızca SUI transferi yapar; USDC/USDT desteği yoktur.
+- Beacon ile check-in (`/api/checkin/beacon`) ve bilet sorgulama
+  (`/api/tickets/[ticket_code]`) hâlâ eski bellek içi mock veriye bakıyor,
+  veritabanına bağlanmadı.
+- Şifreler hash'lenmiyor. Zaten şifreyle giriş yapılmıyor (giriş cüzdanla), ama
+  şema `password` alanını taşıyor.
+- Test yok.
 
-### Backend
-- **Runtime**: Node.js
-- **API**: Next.js API Routes
-- **Database**: SQLite (Prisma ORM)
-- **Authentication**: Session-based with tokens
-- **Cryptography**: crypto-js (HMAC-SHA256)
+## Teknoloji
 
-### Blockchain & Web3
-- **Primary Chain**: SUI Blockchain
-- **SUI SDK**: @mysten/sui (v1.45.0)
-- **Wallet Kit**: @mysten/dapp-kit (v0.19.9)
-- **Wallet Adapters**: @mysten/wallet-kit, wallet-adapter-react
-- **EVM Support**: Hardhat + Solidity 0.8.20
-- **Smart Contracts**: OpenZeppelin (v5.0.1)
-- **Testnets**: SUI Testnet, Polygon Mumbai/Amoy
+| Katman | Kullanılan |
+|---|---|
+| Framework | Next.js 14 (App Router), React 18, TypeScript |
+| Stil | Tailwind CSS, CSS değişkenleriyle tema |
+| Veritabanı | SQLite + Prisma ORM |
+| Kimlik doğrulama | Cüzdan tabanlı, token'lı session (DB'de saklanır) |
+| Blockchain | `@mysten/sui`, `@mysten/dapp-kit` (SUI Testnet) |
+| EVM tarafı | Hardhat + Solidity 0.8.20 (yalnızca kaynak kod) |
+| QR | `qrcode` (üretim), `qr-scanner` (kamera) |
 
-### Utilities
-- **QR Generation**: qrcode
-- **QR Scanning**: qr-scanner
-- **Date Handling**: date-fns
-- **Environment**: dotenv
+## Kurulum
 
-## 📋 Gereksinimler
-
-- Node.js 18+
-- npm veya yarn
-- (Opsiyonel) Git
-
-## 🔧 Kurulum
-
-### 1. Projeyi Klonlayın
-
-```bash
-git clone <repository-url>
-cd eventchaine
-```
-
-### 2. Bağımlılıkları Yükleyin
+Node.js 18+ gerekir.
 
 ```bash
 npm install
-```
-
-### 3. Veritabanını Hazırlayın
-
-```bash
-# Prisma migration'ları çalıştır
-npx prisma migrate dev
-
-# Seed data'yı yükle (demo kullanıcılar ve etkinlikler)
+cp .env.example .env
+npx prisma migrate deploy
 npm run db:seed
-```
-
-### 4. Geliştirme Sunucusunu Başlatın
-
-```bash
 npm run dev
 ```
 
-### 5. Tarayıcıda Açın
+`http://localhost:3000` adresinde açılır. Seed; bir admin kullanıcı, 6 örnek
+etkinlik ve 3 blog yazısı yükler.
 
-```
-http://localhost:3000
-```
+### Giriş nasıl yapılır
 
-## 👥 Demo Kullanıcıları
+Uygulamada e-posta/şifre ile giriş **yoktur**; `/auth/signin` sayfası doğrudan
+cüzdan bağlama ekranıdır.
 
-Seed script ile otomatik oluşturulan demo hesaplar:
+1. Tarayıcınıza Sui Wallet veya Suiet kurun, ağı **Testnet** yapın.
+2. `/auth/signin` sayfasından cüzdanı bağlayın. İlk bağlanışta
+   `wallet_xxxxxxxx@temp.com` geçici e-postasıyla yeni bir kullanıcı oluşturulur.
+3. Admin olmak için: `/profile` sayfasından e-postanızı, `app/api/auth/wallet`
+   içindeki `ADMIN_EMAILS` listesinde yazan adresle değiştirin, sonra çıkıp
+   yeniden cüzdanla giriş yapın. Rol o anda `admin` olarak güncellenir.
 
-### Admin Kullanıcı
-- **E-posta**: `tolgaolguner1@gmail.com`
-- **Şifre**: `tolga123`
-- **Yetkiler**: 
-  - Tüm admin paneli özellikleri
-  - Etkinlik oluşturma/düzenleme/silme
-  - Blog yönetimi
-  - QR tarayıcı ve check-in
-  - Sertifika dağıtımı
-  - Katılımcı yönetimi
+Ücretli etkinliklere kayıt için cüzdanda testnet SUI bulunmalıdır
+([faucet](https://faucet.sui.io/)).
 
-### Normal Kullanıcı
-- **E-posta**: `dogukan@gmail.com`
-- **Şifre**: `dogukan123`
-- **Yetkiler**:
-  - Etkinliklere kayıt olma
-  - QR bilet görüntüleme
-  - Sertifika görüntüleme
-  - Profil yönetimi
+## Blockchain entegrasyonunun gerçek durumu
 
-## 📱 Kullanım Kılavuzu
+| Parça | Durum | Not |
+|---|---|---|
+| Cüzdan bağlama | Gerçek | dapp-kit üzerinden Wallet Standard |
+| Bakiye okuma | Gerçek | `suiClient.getBalance` |
+| SUI ödemesi | Gerçek | `splitCoins` + `transferObjects`, sonuç `waitForTransaction` ile doğrulanır |
+| Transaction imzalama | Gerçek | Cüzdan penceresinde onaylanır |
+| NFT mint | **Simülasyon** | Move modülü deploy edilmediği için `NEXT_PUBLIC_SUI_PACKAGE_ID` `0x0`'dır; bu durumda alıcıya 1 MIST gönderen demo transaction imzalanır, NFT oluşmaz |
+| IPFS metadata | **Simülasyon** | NFT.Storage anahtarı tanımlı değilse sahte bir CID üretilir |
+| Sertifika kaydı | **Simülasyon** | `auto-certificates` uç noktası `tx_hash`, `token_id` ve `ipfs_cid` alanlarını rastgele üretir; arayüzün gönderdiği gerçek mint sonuçlarını okumaz |
+| Zincirden doğrulama | Kısmi | `lib/verification.ts` gerçek `getObject` sorguları yapar, ancak kaydedilen object ID'ler gerçek olmadığı için pratikte sonuç dönmez |
+| Solidity kontratı | **Derlenmiyor** | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5'te kaldırılan `Counters.sol`'ü import ediyor; deploy script'i de yok |
 
-### Kullanıcı Olarak
+Kısacası: para transferi gerçek, sertifika mint'i değil. Bunu gerçek hâle
+getirmek için bir SUI Move modülü yazılıp deploy edilmesi ve package ID'sinin
+`.env`'e yazılması gerekir.
 
-1. **Kayıt & Giriş**
-   - `/auth/signin` veya `/auth/signup` sayfasına gidin
-   - Demo hesap: `dogukan@gmail.com` / `dogukan123`
-
-2. **Etkinliklere Göz Atma**
-   - Ana sayfa veya `/events` sayfasında etkinlikleri görün
-   - Detay sayfası için etkinliğe tıklayın
-
-3. **Etkinliğe Kayıt**
-   - Etkinlik detay sayfasında "Kayıt Ol" butonuna tıklayın
-   - Ücretli ise cüzdan bağlayın ve ödeme yapın
-
-4. **QR Biletinizi Görüntüleme**
-   - `/profile` sayfasına gidin
-   - "Biletlerim" sekmesinde QR kodunuzu görün
-   - QR kodu check-in için kullanılır
-
-5. **Sertifikalarınızı Görme**
-   - Etkinlik bitiminde ve check-in yaptıktan sonra
-   - "Sertifikalarım" sekmesinde NFT sertifikalarınızı görün
-
-### Admin Olarak
-
-1. **Admin Paneline Giriş**
-   - `tolgaolguner1@gmail.com` / `tolga123` ile giriş yapın
-   - Otomatik olarak `/admin` sayfasına yönlendirilirsiniz
-
-2. **Dashboard'u Görüntüleme**
-   - Toplam istatistikler (etkinlik, kayıt, check-in)
-   - Son kayıtlar ve check-in listesi
-   - Gerçek zamanlı aktivite takibi
-
-3. **Etkinlik Yönetimi**
-   - **Oluşturma**: "Yeni Etkinlik Oluştur" butonu
-   - **Düzenleme**: Etkinlik kartında "Düzenle" butonu (mevcut bilgiler otomatik gelir)
-   - **Silme**: Etkinlik kartında "Sil" butonu
-   - **Katılımcılar**: "Katılımcıları Görüntüle" menüsü
-
-4. **QR Tarayıcı ile Check-in**
-   - "QR Tarayıcı" sekmesine geçin
-   - Cüzdan bağlayın (SUI Wallet/Suiet)
-   - Kamerayı katılımcının QR koduna tutun
-   - Otomatik check-in yapılır
-   - Etkinlik bittiyse otomatik sertifika verilir
-
-5. **Sertifika Dağıtımı**
-   - **Manuel**: Etkinlik kartında "Sertifika Dağıt" butonu
-   - **Otomatik**: "Otomatik Sertifika" butonu (check-in yapanlara)
-   - Toplu dağıtım desteklenir
-
-6. **Blog Yönetimi**
-   - **Oluşturma**: "Yeni Blog Yazısı Oluştur"
-   - **Düzenleme**: Blog kartında "Düzenle" butonu
-   - **Görüntülenme**: Otomatik takip edilir (admin müdahale edemez)
-
-## 🌐 Blockchain Implementation (TAMAMEN FONKSİYONEL)
-
-### ✅ Implement Edilen Gerçek Web3 Özellikleri
-
-Proje, blockchain dersi kapsamında **tam fonksiyonel Web3 entegrasyonu** ile geliştirilmiştir. Mock değil, **gerçek blockchain transaction'ları** kullanılmaktadır:
-
-#### 1️⃣ **Real NFT Minting** (`lib/suiNFT.ts`)
-```typescript
-// Gerçek SUI blockchain'de NFT oluşturma
-const result = await mintProofOfPresenceNFT(suiClient, account, {
-  recipient: "0x123...",
-  eventTitle: "Blockchain Summit 2024",
-  participantName: "John Doe",
-  eventDate: "15 Ocak 2024",
-  certificateNo: "EC-2024-001",
-  metadataUrl: "ipfs://QmXx..."
-});
-
-// Transaction hash ve explorer URL döner
-console.log(result.txHash); // 0xabc123...
-console.log(result.explorerUrl); // https://suiscan.xyz/testnet/tx/...
-```
-
-**Özellikler:**
-- ✅ `Transaction` oluşturma ve imzalama
-- ✅ Move module function çağrısı (`proof_of_presence::certificate::mint`)
-- ✅ Cüzdan ile gerçek transaction signing
-- ✅ Batch minting (çoklu NFT, rate limit korumalı)
-- ✅ Transaction confirmation
-- ✅ Object ID ve TX hash döndürme
-
-#### 2️⃣ **IPFS Metadata Storage** (`lib/ipfs.ts`)
-```typescript
-// NFT.Storage kullanarak IPFS'e upload
-const ipfsUrl = await uploadMetadataToIPFS({
-  name: "Event Certificate",
-  description: "Proof of Presence NFT",
-  image: "https://...",
-  attributes: [...]
-});
-
-// Gerçek IPFS URL: ipfs://bafybeif5vf...
-```
-
-**Özellikler:**
-- ✅ NFT.Storage API entegrasyonu
-- ✅ JSON metadata upload
-- ✅ Görsel/image upload desteği (Canvas API)
-- ✅ Mock fallback (API key yoksa)
-- ✅ Error handling ve retry logic
-
-#### 3️⃣ **Real SUI Payments** (`lib/suiPayment.ts`)
-```typescript
-// Gerçek SUI token transferi
-const result = await processPayment(suiClient, account, {
-  recipient: platformWallet,
-  amount: 0.5, // 0.5 SUI
-  eventTitle: "Workshop",
-  eventId: "evt123"
-});
-
-// Balance check + transaction
-console.log(result.success); // true
-console.log(result.txHash); // 0xdef456...
-```
-
-**Özellikler:**
-- ✅ Cüzdan bakiye kontrolü (`getBalance`)
-- ✅ SUI → MIST conversion (1 SUI = 1,000,000,000 MIST)
-- ✅ `splitCoins` ve `transferObjects` kullanımı
-- ✅ Gas fee hesaplama
-- ✅ Transaction execution
-- ✅ Türkçe hata mesajları
-
-#### 4️⃣ **On-Chain Certificate Verification** (`lib/verification.ts`)
-```typescript
-// Blockchain'den NFT doğrulama
-const cert = await verifyCertificateOnChain(
-  suiClient,
-  "0xNFT_OBJECT_ID"
-);
-
-if (cert.exists) {
-  console.log(cert.owner); // Sahip adresi
-  console.log(cert.eventTitle); // Event bilgisi
-  console.log(cert.isSoulbound); // Transfer edilemez mi?
-}
-```
-
-**Özellikler:**
-- ✅ `getObject` ile blockchain'den veri okuma
-- ✅ NFT owner doğrulama
-- ✅ Transaction history sorgulama
-- ✅ Soulbound kontrolü
-- ✅ Kullanıcının tüm NFT'lerini listeleme
-
-#### 5️⃣ **Polygon Smart Contract Deployment** (`scripts/deploy.js`)
-```bash
-# Hardhat ile Polygon Mumbai'ye deploy
-npx hardhat run scripts/deploy.js --network polygonMumbai
-
-# Output:
-# ✅ Deploying ProofOfPresenceSBT...
-# ✅ Contract deployed to: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb5
-# 🔗 View on PolygonScan: https://mumbai.polygonscan.com/...
-```
-
-**Özellikler:**
-- ✅ Solidity 0.8.20 contract'ı compile
-- ✅ ERC-721 Soulbound Token implementation
-- ✅ Polygon testnet/mainnet deploy
-- ✅ Block confirmation bekleme
-- ✅ Explorer URL generation
-
-#### 6️⃣ **Admin Panel Integration** (`app/admin/page.tsx`)
-
-Admin panelinden **gerçek blockchain işlemleri**:
-
-```typescript
-// "Sertifika Dağıt" butonuna tıklayınca:
-const handleIssueCertificates = async (eventId) => {
-  // 1. Cüzdan kontrolü
-  if (!currentWallet) return alert("Cüzdan bağlayın!");
-  
-  // 2. IPFS'e metadata yükle
-  const ipfsUrl = await uploadMetadataToIPFS(metadata);
-  
-  // 3. Gerçek NFT mint
-  const results = await batchMintNFTs(suiClient, account, batchData);
-  
-  // 4. DB'ye kaydet
-  await saveCertificatesToDB(results);
-  
-  // ✅ Explorer linkleri göster
-  alert(`${results.length} NFT oluşturuldu!\n${explorerUrls}`);
-};
-```
-
-**Kullanıcı deneyimi:**
-1. Admin "Sertifika Dağıt" butonuna tıklar
-2. Cüzdan bağlı mı kontrol edilir
-3. Metadata IPFS'e yüklenir
-4. Her katılımcı için blockchain'de gerçek NFT mint edilir
-5. Transaction hash'leri console'da görünür
-6. Explorer link'leri ile doğrulama yapılabilir
-
-### 📊 Blockchain Integration Maturity: %95
-
-| Feature | Status | Implementation |
-|---------|--------|----------------|
-| Wallet Connection | ✅ 100% | Sui Wallet, Suiet, Wallet Standard |
-| NFT Minting | ✅ 100% | Real SUI blockchain transactions |
-| IPFS Storage | ✅ 95% | NFT.Storage API (mock fallback) |
-| Payment Processing | ✅ 100% | Real SUI token transfers |
-| On-Chain Verification | ✅ 100% | SuiClient getObject/getTx |
-| Smart Contract | ✅ 90% | Solidity deployed (integration pending) |
-| Admin Panel Integration | ✅ 100% | Real blockchain calls |
-| Explorer Integration | ✅ 100% | SuiScan links for all TXs |
-
-### 🚀 Deployment Guide
-
-Gerçek blockchain özelliklerini aktive etmek için: **[DEPLOYMENT.md](./DEPLOYMENT.md)** dosyasına bakın.
-
-**Temel adımlar:**
-1. `.env` dosyası oluştur (`.env.example`'dan)
-2. NFT.Storage API key al (ücretsiz)
-3. Sui Wallet yükle ve testnet'e geç
-4. Faucet'ten test SUI al
-5. Admin panelinden "Sertifika Dağıt" ile ilk NFT'ni mint et!
-
-### 🎓 Blockchain Dersi Değerlendirmesi
-
-Bu proje **blockchain dersi final projesi** için şu kriterleri karşılamaktadır:
-
-✅ **Smart Contract Development**: Solidity ERC-721 Soulbound Token  
-✅ **Web3 Frontend Integration**: @mysten/dapp-kit ile cüzdan bağlama  
-✅ **Real Blockchain Transactions**: NFT mint, payment, verification  
-✅ **Decentralized Storage**: IPFS metadata depolama  
-✅ **Multi-Chain Support**: SUI (primary) + Polygon (EVM)  
-✅ **Transaction Signing**: Gerçek cüzdan ile imzalama  
-✅ **On-Chain Verification**: Blockchain'den veri okuma  
-✅ **Production-Ready**: Error handling, user feedback, explorer links  
-
-**Sonuç:** Proje, teorik blockchain bilgilerini **pratik, çalışan bir DApp'e** dönüştürmüştür. Mock değil, **gerçek blockchain network'lerde çalışan** bir Web3 uygulamasıdır.
-
----
-
-## 📁 Proje Yapısı
+## Proje yapısı
 
 ```
 eventchaine/
-├── app/                          # Next.js App Router
-│   ├── api/                      # Backend API Routes
-│   │   ├── auth/                 # Kimlik doğrulama
-│   │   │   └── wallet/          # Cüzdan auth
-│   │   ├── events/              # Etkinlik CRUD
-│   │   │   ├── [id]/           # Tek etkinlik
-│   │   │   └── auto-certificates/ # Otomatik sertifika
-│   │   ├── admin/               # Admin endpoints
-│   │   │   ├── registrations/  # Tüm kayıtlar
-│   │   │   └── checkins/       # Tüm check-in'ler
-│   │   ├── checkin/            # Check-in sistemi
-│   │   │   ├── qr/             # QR check-in
-│   │   │   └── beacon/         # Beacon check-in
-│   │   ├── certificates/       # Sertifika yönetimi
-│   │   │   └── verify/         # Doğrulama
-│   │   ├── posts/              # Blog CRUD
-│   │   ├── me/                 # Kullanıcı profili
-│   │   └── stats/              # İstatistikler
-│   ├── auth/                    # Auth sayfaları
-│   │   ├── signin/
-│   │   └── signup/
-│   ├── events/                  # Etkinlik sayfaları
-│   │   └── [slug]/             # Detay sayfası
-│   ├── blog/                    # Blog sayfaları
-│   │   └── [slug]/             # Blog detay
-│   ├── admin/                   # Admin panel
-│   ├── profile/                 # Kullanıcı profili
-│   ├── verify/                  # Sertifika doğrulama
-│   ├── layout.tsx              # Root layout
-│   └── page.tsx                # Ana sayfa
-├── components/                  # React bileşenleri
-│   ├── Header.tsx              # Navbar + Cüzdan
-│   ├── Footer.tsx
-│   ├── EventCard.tsx
-│   ├── BlogCard.tsx
-│   ├── CertificateCard.tsx
-│   ├── QRModal.tsx             # QR kod modal
-│   ├── QRScanner.tsx           # Kamera tarayıcı
-│   ├── WalletConnect.tsx       # Cüzdan bağlama
-│   ├── Modal.tsx
-│   ├── Button.tsx
-│   └── ...
-├── contexts/                    # React Context
-│   ├── WalletContext.tsx       # SUI cüzdan state
-│   └── ThemeContext.tsx        # Tema yönetimi
-├── lib/                         # Utility fonksiyonlar
-│   ├── prisma.ts               # Prisma client
-│   ├── crypto.ts               # QR & HMAC
-│   ├── suiNFT.ts              # SUI NFT mint
-│   └── suiPayment.ts          # SUI ödemeleri
-├── contracts/                   # Smart Contracts
-│   └── ProofOfPresenceSBT.sol  # ERC-721 SBT
-├── prisma/                      # Database
-│   ├── schema.prisma           # DB modelleri
-│   ├── seed.ts                 # Seed data
-│   └── migrations/             # Migration dosyaları
-├── types/                       # TypeScript tipleri
-│   └── index.ts
-├── public/                      # Statik dosyalar
-│   └── images/
-├── hardhat.config.ts           # Hardhat config
-├── package.json
-└── README.md
+├── app/
+│   ├── api/               # Next.js API route'ları
+│   ├── admin/             # Admin paneli (pano, etkinlik, blog, QR, cüzdan)
+│   ├── auth/              # Cüzdanla giriş / kayıt
+│   ├── events/            # Etkinlik listesi ve detay
+│   ├── blog/              # Blog listesi ve detay
+│   ├── profile/           # Biletlerim, sertifikalarım, profil
+│   ├── verify/            # Herkese açık sertifika doğrulama
+│   ├── about/, contact/
+│   └── page.tsx           # Ana sayfa
+├── components/            # Ortak bileşenler (QRModal, QRScanner, WalletConnect, ...)
+├── contexts/              # WalletContext, ThemeContext
+├── lib/
+│   ├── prisma.ts          # Prisma istemcisi
+│   ├── crypto.ts          # Bilet kodu ve HMAC imzalı QR payload
+│   ├── suiNFT.ts          # NFT mint (Move modülü yoksa demo transaction)
+│   ├── suiPayment.ts      # SUI transferi ve bakiye
+│   ├── verification.ts    # Zincirden sertifika doğrulama
+│   ├── ipfs.ts            # NFT.Storage yükleme (anahtar yoksa sahte CID)
+│   ├── certificateImage.ts
+│   └── db.ts              # Eski bellek içi mock veri (2 route hâlâ kullanıyor)
+├── contracts/
+│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derlenmiyor, deploy edilmedi)
+├── prisma/
+│   ├── schema.prisma
+│   ├── seed.ts
+│   └── migrations/
+└── hardhat.config.ts
 ```
 
-## 🗄️ Veritabanı Şeması
+## API uç noktaları
 
-### Modeller
+**Kimlik / cüzdan**
+- `POST /api/auth/wallet` — cüzdan ile giriş veya ilk kayıt
+- `POST /api/wallet/connect`, `DELETE /api/wallet/connect` — profile cüzdan bağla/kaldır
+- `GET /api/me/wallets` — cüzdanları listele (ekleme/silme kapalıdır)
 
-- **User**: Kullanıcı bilgileri, rol, cüzdan bağlantısı
-- **Wallet**: Çoklu cüzdan desteği (SUI, Phantom, vb.)
-- **Session**: Oturum yönetimi, token-based auth
-- **Event**: Etkinlik detayları, fiyatlandırma, kapasite
-- **Registration**: Etkinlik kayıtları, QR bilet, ödeme
-- **CheckIn**: Katılım kaydı, QR/Beacon yöntemi
-- **Certificate**: NFT sertifikaları, blockchain referansları
-- **BlogPost**: Blog içerikleri, görüntülenme sayaçları
+**Etkinlikler**
+- `GET /api/events` — `tag`, `date`, `q` ile filtreleme
+- `POST /api/events` — yeni etkinlik (admin; arayüzden çağrılmıyor)
+- `GET /api/events/[id]` — id veya slug ile detay
+- `POST /api/events/[id]/register` — kayıt ol
 
-### İlişkiler
+**Sertifikalar**
+- `POST /api/events/[id]/certificates/issue` — seçili veya check-in yapan kullanıcılara
+- `POST /api/events/auto-certificates` — biten etkinlikte toplu sertifika
+- `GET /api/events/auto-certificates` — biten etkinliklerin sertifika durumu
+- `GET /api/certificates/verify?certificate_no=...` veya `?tx_hash=...`
 
-- User → Events (1:N, oluşturucu)
-- User → Registrations (1:N)
-- User → CheckIns (1:N)
-- User → Certificates (1:N)
-- User → Wallets (1:N)
-- Event → Registrations (1:N)
-- Event → CheckIns (1:N)
-- Event → Certificates (1:N)
+**Check-in**
+- `POST /api/checkin/qr` — QR ile check-in (admin cüzdanı doğrulanır)
+- `POST /api/checkin/beacon` — BLE beacon (mock veriye bağlı)
+- `GET /api/tickets/[ticket_code]` — bilet sorgu (mock veriye bağlı)
 
-## 📡 API Endpoints
+**Profil / içerik / istatistik**
+- `GET /api/me/profile`, `PUT /api/me/profile`
+- `GET /api/me/registrations`, `GET /api/me/certificates`
+- `GET /api/admin/registrations`, `GET /api/admin/checkins`, `GET /api/admin/wallet`
+- `GET /api/posts`, `GET /api/posts/[slug]` (görüntülenmeyi +1 artırır)
+- `GET /api/stats`
 
-### Kimlik Doğrulama
-- `POST /api/auth/wallet` - Cüzdan ile giriş/kayıt
+## Veritabanı
 
-### Etkinlikler
-- `GET /api/events` - Tüm etkinlikleri listele
-- `POST /api/events` - Yeni etkinlik oluştur (admin)
-- `GET /api/events/[id]` - Etkinlik detayı
-- `POST /api/events/[id]/register` - Etkinliğe kayıt ol
-- `POST /api/events/[id]/certificates/issue` - Sertifika dağıt (admin)
-- `POST /api/events/auto-certificates` - Otomatik sertifika (admin)
+SQLite, Prisma ile yönetilir. Modeller: `User`, `Wallet`, `Session`, `Event`,
+`Registration`, `CheckIn`, `Certificate`, `BlogPost`.
 
-### Profil
-- `GET /api/me/profile` - Kullanıcı profili
-- `PUT /api/me/profile` - Profil güncelle
-- `GET /api/me/registrations` - Biletlerim
-- `GET /api/me/certificates` - Sertifikalarım
-- `GET /api/me/wallets` - Cüzdanlarım
+`Event.tags` SQLite dizi desteklemediği için JSON string olarak saklanır.
+`CheckIn` ve `Certificate` üzerinde `user_id + event_id` bileşik unique kısıtı
+vardır; mükerrer check-in ve mükerrer sertifika bu şekilde engellenir.
 
-### Admin
-- `GET /api/admin/registrations` - Tüm kayıtlar
-- `GET /api/admin/checkins` - Tüm check-in'ler
-
-### Check-in
-- `POST /api/checkin/qr` - QR kod ile check-in
-- `POST /api/checkin/beacon` - Beacon ile check-in
-
-### Sertifikalar
-- `GET /api/certificates/verify?no=XXX` - Sertifika doğrula
-
-### Blog
-- `GET /api/posts` - Tüm blog yazıları
-- `GET /api/posts/[slug]` - Blog detay (görüntülenme +1)
-
-### İstatistikler
-- `GET /api/stats` - Genel istatistikler
-
-## 🔐 Güvenlik
-
-### Mevcut Güvenlik Özellikleri
-- ✅ Session-based authentication
-- ✅ Token expiration handling
-- ✅ HMAC-SHA256 QR kod imzalama
-- ✅ Role-based access control (admin/user)
-- ✅ Cascade delete (user silinirse ilişkili veriler silinir)
-- ✅ Input validation
-- ✅ SQL injection koruması (Prisma ORM)
-
-### Production İçin Öneriler
-- 🔒 HTTPS zorunlu
-- 🔒 Şifre hashleme (bcrypt)
-- 🔒 JWT + HttpOnly cookies
-- 🔒 CSRF protection
-- 🔒 Rate limiting
-- 🔒 Environment variables (.env.local)
-- 🔒 API key rotation
-- 🔒 Database encryption
-
-## 🎨 Tasarım Sistemi
-
-### Renkler
-- **Primary**: `#0346b9` (Mavi)
-- **Secondary**: `#fa9e0f` (Turuncu)
-- **Background**: `#0F172A` (Dark mode)
-- **Text**: `#F8FAFC` (Light)
-- **Success**: `#22C55E`
-- **Error**: `#EF4444`
-
-### Tipografi
-- **Heading**: Sora (font-heading)
-- **Body**: Inter (font-body)
-
-### Spacing
-- Border Radius: 16-24px (rounded-xl/2xl)
-- Shadow: Custom CSS variables
-
-## 🚀 Deployment
-
-### Vercel (Önerilen)
+Kurulum, PostgreSQL'e geçiş ve sorun giderme için: [DATABASE_SETUP.md](./DATABASE_SETUP.md)
 
 ```bash
-# Vercel CLI ile
-vercel
-
-# veya GitHub'a push yapın, otomatik deploy edilir
+npx prisma studio      # veritabanını görsel arayüzde aç
+npm run db:seed        # örnek veriyi yeniden yükle
 ```
 
-### Environment Variables
+## Bilinen sorunlar
+
+- Admin panelindeki etkinlik/blog ekleme, düzenleme ve silme kalıcı değil
+  (yukarıda "Eksik ya da yarım kalanlar" bölümüne bakın).
+- `POST /api/wallet/connect` adres uzunluğunu 42 karakter olarak doğruluyor; bu
+  EVM formatı. SUI adresleri 66 karakter olduğu için bu uç nokta SUI adreslerini
+  reddeder.
+- Etkinlikler sayfasındaki etiket filtresi hiçbir sonuç döndürmüyor: API `tags`
+  alanını zaten diziye çevirdiği hâlde arayüz bir kez daha `JSON.parse` etmeye
+  çalışıyor.
+- Blog görüntülenme sayacı her sayfa açılışında artıyor; oturum/çerez bazlı
+  tekilleştirme yok.
+- Seed verisindeki etkinliklerin tarihleri geçmişte kaldığı için ana sayfada
+  yaklaşan etkinlik görünmeyebilir.
+- `contracts/ProofOfPresenceSBT.sol` mevcut OpenZeppelin sürümüyle derlenmiyor.
+- QR tarayıcı mobil tarayıcılarda test edilmedi.
+
+## Ortam değişkenleri
+
+`.env.example` dosyasını `.env` olarak kopyalayın. Uygulamanın çalışması için
+yalnızca `DATABASE_URL` zorunludur; diğerleri blockchain özelliklerini
+etkinleştirir.
 
 ```env
-# Database
 DATABASE_URL="file:./dev.db"
-
-# JWT Secret
-JWT_SECRET="your-secret-key"
-
-# SUI Network
 NEXT_PUBLIC_SUI_NETWORK="testnet"
-
-# Blockchain (Opsiyonel)
-POLYGON_MUMBAI_RPC="https://rpc-mumbai.maticvigil.com"
-POLYGON_AMOY_RPC="https://rpc-amoy.polygon.technology"
-PRIVATE_KEY="your-private-key"
+NEXT_PUBLIC_SUI_PACKAGE_ID="0x0"          # Move modülü deploy edilirse buraya
+NEXT_PUBLIC_PLATFORM_WALLET_ADDRESS="0x…" # ödemelerin gideceği adres
+NFT_STORAGE_KEY=""                        # boşsa IPFS yüklemesi taklit edilir
 ```
 
-## 🧪 Test
+`.env` dosyası depoya dahil değildir ve olmamalıdır.
 
-### Development Testing
+## Lisans ve künye
 
-```bash
-# Development sunucusu
-npm run dev
+MIT.
 
-# Database seed
-npm run db:seed
-
-# Prisma Studio (DB viewer)
-npx prisma studio
-```
-
-### Manuel Test Senaryoları
-1. ✅ Kullanıcı kaydı ve girişi
-2. ✅ Etkinliğe kayıt olma
-3. ✅ QR bilet oluşturma
-4. ✅ Admin panel erişimi
-5. ✅ Check-in yapma
-6. ✅ Sertifika dağıtımı
-7. ✅ Blog görüntülenme sayacı
-8. ✅ Cüzdan bağlama
-
-## 📚 Öğrenme Kaynakları
-
-### SUI Blockchain
-- [SUI Documentation](https://docs.sui.io/)
-- [SUI TypeScript SDK](https://sdk.mystenlabs.com/typescript)
-- [dApp Kit Guide](https://sdk.mystenlabs.com/dapp-kit)
-
-### Next.js
-- [Next.js Documentation](https://nextjs.org/docs)
-- [App Router Guide](https://nextjs.org/docs/app)
-
-### Prisma
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Prisma Client API](https://www.prisma.io/docs/reference/api-reference/prisma-client-reference)
-
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
-### Geliştirme Kuralları
-- TypeScript strict mode kullanın
-- Anlamlı commit mesajları yazın
-- Component'leri modüler tutun
-- API route'larına error handling ekleyin
-- CSS variables kullanın (theme desteği için)
-
-## 🐛 Bilinen Sorunlar & TODO
-
-### Bilinen Sorunlar
-- [ ] Blog görüntülenme sayacı her sayfa yenilemede artıyor (cookie/session bazlı olmalı)
-- [ ] QR tarayıcı mobil cihazlarda optimize edilmeli
-- [ ] NFT.Storage API key gereksiz ise mock kullanılıyor (production için gerekli)
-
-### ✅ Tamamlanan İyileştirmeler
-- ✅ Gerçek NFT minting (SUI blockchain)
-- ✅ IPFS metadata storage (NFT.Storage)
-- ✅ Gerçek SUI token payments
-- ✅ On-chain verification
-- ✅ Polygon smart contract deployment script
-- ✅ Admin panel blockchain integration
-- ✅ Blog edit fonksiyonu
-- ✅ Event edit fonksiyonu
-- ✅ Otomatik blog view counter
-
-### 🔜 Yapılacaklar (İyileştirmeler)
-- [ ] Email notification sistemi (kayıt, sertifika bildirimleri)
-- [ ] Move module deployment (SUI blockchain'de kendi module'ümüz)
-- [ ] Mobil responsive iyileştirmeleri
-- [ ] Unit & Integration testleri
-- [ ] i18n (çoklu dil desteği: EN, TR)
-- [ ] Dark/Light theme toggle
-- [ ] Event calendar view
-- [ ] Advanced search & filters
-- [ ] Social media sharing (Twitter, LinkedIn)
-- [ ] Analytics dashboard (Chart.js ile grafikler)
-- [ ] Push notifications
-- [ ] Export certificates as PDF
-
-## 🚀 Blockchain Quick Start
-
-### Gerçek NFT Mint Etmek İçin:
-
-1. **NFT.Storage API Key Alın** (Ücretsiz)
-   ```bash
-   # https://nft.storage adresine gidin
-   # Ücretsiz hesap oluşturun ve API key alın
-   # .env dosyasına ekleyin:
-   NFT_STORAGE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-   ```
-
-2. **Sui Wallet Yükleyin**
-   ```bash
-   # Chrome: https://chrome.google.com/webstore/detail/sui-wallet/
-   # Cüzdan oluşturun ve TESTNET'e geçin
-   ```
-
-3. **Test SUI Alın**
-   ```bash
-   # Discord: https://discord.gg/sui → #testnet-faucet
-   # veya: curl --location --request POST 'https://faucet.testnet.sui.io/gas' \
-   #   --header 'Content-Type: application/json' \
-   #   --data-raw '{"FixedAmountRequest": {"recipient": "YOUR_ADDRESS"}}'
-   ```
-
-4. **Admin Olarak Giriş Yapın**
-   ```
-   Email: tolgaolguner1@gmail.com
-   Password: tolga123
-   ```
-
-5. **Cüzdan Bağlayın** (Header → Connect Wallet)
-
-6. **İlk NFT'nizi Mint Edin!**
-   ```
-   /admin → Etkinlikler → Sertifika Dağıt
-   ```
-
-📖 **Detaylı rehber için:** [DEPLOYMENT.md](./DEPLOYMENT.md)
-
----
-
-## 📄 Lisans
-
-MIT License - Detaylar için `LICENSE` dosyasına bakın.
-
-## 📧 İletişim & Destek
-
-- **GitHub Issues**: Bug report ve feature request için
-- **Email**: it-mis@isikun.edu.tr
-- **Discord**: (Eklenecek)
-
----
-
-**Made with ❤️ by IT&MIS Club - Işık University**
-
-*SUI Blockchain ile güçlendirilmiştir 🚀*
+Işık Üniversitesi IT&MIS Kulübü — blockchain dersi dönem projesi.
