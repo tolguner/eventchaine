@@ -86,8 +86,13 @@ export async function processSuiPayment(
 
     console.log('✅ Payment transaction executed:', result.digest);
 
-    // Transaction durumunu kontrol et
-    if (result.effects?.status?.status === 'success') {
+    // Cüzdan yalnızca digest döndürüyor; işlem sonucunu zincirden doğrula
+    const confirmed = await suiClient.waitForTransaction({
+      digest: result.digest,
+      options: { showEffects: true },
+    });
+
+    if (confirmed.effects?.status?.status === 'success') {
       const network = process.env.NEXT_PUBLIC_SUI_NETWORK || 'testnet';
       const explorerUrl = `https://suiscan.xyz/${network}/tx/${result.digest}`;
 
@@ -105,7 +110,7 @@ export async function processSuiPayment(
         explorerUrl,
       };
     } else {
-      const errorMessage = result.effects?.status?.error || 'İşlem başarısız oldu';
+      const errorMessage = confirmed.effects?.status?.error || 'İşlem başarısız oldu';
       console.error('❌ Payment failed:', errorMessage);
       
       return {

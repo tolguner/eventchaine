@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useCurrentAccount, useSuiClient, useSignTransaction } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSuiClient, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { Modal } from './Modal';
 import Button from './Button';
 import { processSuiPayment, getWalletBalance } from '@/lib/suiPayment';
@@ -21,7 +21,7 @@ interface PaymentModalProps {
 export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModalProps) {
   const currentAccount = useCurrentAccount();
   const suiClient = useSuiClient();
-  const { mutateAsync: signAndExecuteTransaction } = useSignTransaction();
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
@@ -74,8 +74,7 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
     try {
       const result = await processSuiPayment(
         suiClient,
-        currentAccount.address,
-        signAndExecuteTransaction,
+        { address: currentAccount.address, signAndExecuteTransaction },
         {
           amount: event.price,
           recipientAddress: adminWallet,

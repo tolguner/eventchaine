@@ -1,5 +1,5 @@
 import { Transaction } from '@mysten/sui/transactions';
-import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { SuiClient, getFullnodeUrl, type SuiObjectChange } from '@mysten/sui/client';
 
 export interface NFTMintParams {
   recipientAddress: string;
@@ -98,11 +98,17 @@ export async function mintProofOfPresenceNFT(
 
     console.log('✅ Transaction executed:', result.digest);
 
-    // Transaction durumunu kontrol et
-    if (result.effects?.status?.status === 'success') {
+    // Cüzdan yalnızca digest döndürüyor; işlem sonucunu zincirden doğrula
+    const confirmed = await suiClient.waitForTransaction({
+      digest: result.digest,
+      options: { showEffects: true, showObjectChanges: true },
+    });
+
+    if (confirmed.effects?.status?.status === 'success') {
       // Mint edilen NFT'nin object ID'sini bul
-      const createdObject = result.objectChanges?.find(
-        (change: any) => change.type === 'created'
+      const createdObject = confirmed.objectChanges?.find(
+        (change): change is Extract<SuiObjectChange, { type: 'created' }> =>
+          change.type === 'created'
       );
 
       const network = process.env.NEXT_PUBLIC_SUI_NETWORK || 'testnet';
@@ -120,7 +126,7 @@ export async function mintProofOfPresenceNFT(
         explorerUrl,
       };
     } else {
-      const errorMessage = result.effects?.status?.error || 'NFT mint işlemi başarısız oldu';
+      const errorMessage = confirmed.effects?.status?.error || 'NFT mint işlemi başarısız oldu';
       console.error('❌ Transaction failed:', errorMessage);
       
       return {
