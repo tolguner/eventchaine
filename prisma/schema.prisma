@@ -1,0 +1,163 @@
+// EventChain veritabanı şeması
+// Development: SQLite (prisma/dev.db) - detaylar için DATABASE_SETUP.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  name                String
+  email               String    @unique
+  password            String    @default("")
+  student_no          String?
+  department          String?
+  class_year          Int?
+  role                String    @default("user") // admin | user
+  walletAddress       String?   @unique
+  wallet_connected_at DateTime?
+  primary_wallet_id   String?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  wallets       Wallet[]
+  sessions      Session[]
+  events        Event[]        @relation("EventCreator")
+  registrations Registration[]
+  checkIns      CheckIn[]
+  certificates  Certificate[]
+
+  @@index([email])
+}
+
+model Wallet {
+  id           String    @id @default(cuid())
+  address      String    @unique
+  wallet_type  String    @default("Unknown") // Sui Wallet, Suiet, ...
+  is_primary   Boolean   @default(false)
+  user_id      String
+  connected_at DateTime  @default(now())
+  last_used_at DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([user_id])
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  description  String
+  start_at     DateTime
+  end_at       DateTime
+  location     String
+  capacity     Int
+  price        Float    @default(0)
+  currency     String   @default("FREE") // SUI | USDC | USDT | MATIC | ETH | FREE
+  tags         String   @default("[]") // SQLite dizi desteklemiyor, JSON string
+  cover_url    String   @default("")
+  created_by   String
+  is_published Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  creator       User           @relation("EventCreator", fields: [created_by], references: [id])
+  registrations Registration[]
+  checkIns      CheckIn[]
+  certificates  Certificate[]
+
+  @@index([slug])
+  @@index([start_at])
+}
+
+model Registration {
+  id               String   @id @default(cuid())
+  user_id          String
+  event_id         String
+  status           String   @default("confirmed") // confirmed | waitlist | cancelled
+  ticket_code      String   @unique
+  qr_payload       String
+  payment_tx_hash  String?
+  payment_amount   Float?
+  payment_currency String?
+  created_at       DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, event_id])
+  @@index([event_id])
+  @@index([ticket_code])
+}
+
+model CheckIn {
+  id          String   @id @default(cuid())
+  user_id     String
+  event_id    String
+  method      String   @default("qr") // qr | beacon
+  device_hash String   @default("")
+  verifier_id String?
+  checkin_at  DateTime @default(now())
+
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, event_id])
+  @@index([event_id])
+}
+
+model Certificate {
+  id               String    @id @default(cuid())
+  user_id          String
+  event_id         String
+  certificate_no   String    @unique
+  ipfs_cid         String    @default("")
+  chain            String    @default("Sui Testnet")
+  contract_address String    @default("0x0")
+  token_id         String    @default("")
+  tx_hash          String    @default("")
+  minted_at        DateTime  @default(now())
+  revoked_at       DateTime?
+
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, event_id])
+  @@index([certificate_no])
+  @@index([tx_hash])
+}
+
+model BlogPost {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  excerpt    String
+  content    String
+  cover_url  String   @default("")
+  category   String   @default("Genel")
+  author     String   @default("IT&MIS Kulübü")
+  views      Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([slug])
+}

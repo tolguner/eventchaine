@@ -222,7 +222,7 @@ git push origin main
 
 4. **Environment Variables (Vercel)**
 ```
-DATABASE_URL=file:./prisma/dev.db
+DATABASE_URL=file:./dev.db
 NEXT_PUBLIC_SUI_NETWORK=testnet
 NEXT_PUBLIC_SUI_PACKAGE_ID=0x...
 NFT_STORAGE_KEY=eyJ...

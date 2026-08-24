@@ -578,7 +578,7 @@ vercel
 
 ```env
 # Database
-DATABASE_URL="file:./prisma/dev.db"
+DATABASE_URL="file:./dev.db"
 
 # JWT Secret
 JWT_SECRET="your-secret-key"

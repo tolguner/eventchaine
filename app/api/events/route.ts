@@ -15,8 +15,10 @@ export async function GET(request: NextRequest) {
         ...(date && { start_at: { gte: new Date(date) } }),
         ...(q && {
           OR: [
-            { title: { contains: q, mode: 'insensitive' } },
-            { description: { contains: q, mode: 'insensitive' } },
+            // SQLite'ta LIKE ASCII için zaten büyük/küçük harf duyarsız;
+            // Prisma'nın `mode` seçeneği SQLite provider'ında desteklenmiyor.
+            { title: { contains: q } },
+            { description: { contains: q } },
           ],
         }),
       },

@@ -7,7 +7,7 @@ EventChaine platformu artık **gerçek bir veritabanı** kullanıyor! In-memory 
 ## 🗄️ Mevcut Yapı
 
 ### Development (SQLite)
-- **Veritabanı:** `prisma/dev.db` (dosya tabanlı)
+- **Veritabanı:** `prisma/dev.db` (dosya tabanlı, `DATABASE_URL="file:./dev.db"` — yol şemaya göre çözülür)
 - **ORM:** Prisma
 - **Avantajlar:** 
   - Kolay kurulum
