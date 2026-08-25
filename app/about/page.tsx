@@ -57,7 +57,7 @@ export default function AboutPage() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2" style={{ color: 'var(--text-primary)' }}>Sertifika</h3>
                   <p style={{ color: 'var(--text-secondary)' }}>
-                    Etkinlik sonrası, Polygon blockchain üzerinde Soulbound NFT sertifikan mint edilir.
+                    Etkinlik sonrası, SUI blockchain üzerinde Soulbound NFT sertifikan mint edilir.
                   </p>
                 </div>
               </div>
