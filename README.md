@@ -104,11 +104,11 @@ cüzdan bağlama ekranıdır.
 | IPFS metadata | **Simülasyon** | NFT.Storage anahtarı tanımlı değilse sahte bir CID üretilir |
 | Sertifika kaydı | Gerçek | Mint sonucu (`tx_hash`, `token_id`, `ipfs_cid`) `/api/events/auto-certificates` tarafından veritabanına yazılır; mint yapılmadıysa bu alanlar boş bırakılır (uydurma değer üretilmez) |
 | Zincirden doğrulama | Gerçek | `lib/verification.ts`, mint edilmiş gerçek object ID'ler için `getObject` ile zincirden okur |
-| Solidity kontratı | Derleniyor | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5 uyumlu; `scripts/deploy.js` hazır ama Polygon'a deploy edilmedi (opsiyonel EVM tarafı, proje SUI'yi kullanıyor) |
+| Solidity kontratı | Gerçek | `contracts/ProofOfPresenceSBT.sol` Polygon Amoy testnet'e deploy edildi ve gerçek bir mint ile test edildi; opsiyonel EVM tarafı, proje SUI'yi ana zincir olarak kullanıyor |
 
-Kısacası: para transferi ve sertifika mint'i ikisi de artık gerçek zincir
-işlemi. Eksik kalan tek parça isteğe bağlı Polygon/EVM tarafı ve IPFS
-yüklemesi (NFT.Storage API anahtarı gerektirir).
+Kısacası: para transferi, sertifika mint'i (SUI) ve opsiyonel Polygon
+kontratı üçü de artık gerçek zincir işlemi. Eksik kalan tek parça IPFS
+yüklemesi (NFT.Storage API anahtarı gerektirir, yoksa taklit edilir).
 
 ## Proje yapısı
 
@@ -135,10 +135,10 @@ eventchaine/
 │   ├── ipfs.ts            # NFT.Storage yükleme (anahtar yoksa sahte CID)
 │   └── certificateImage.ts
 ├── contracts/
-│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derleniyor, deploy edilmedi; opsiyonel EVM tarafı)
+│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (Polygon Amoy'a deploy edildi; opsiyonel EVM tarafı)
 ├── scripts/
-│   └── deploy.js          # Polygon deploy script'i (derlendi, çalıştırılmadı)
-├── sui/proof_of_presence/ # SUI Move modülü — mint fonksiyonu (derlendi, test edildi, deploy edilmedi)
+│   └── deploy.js          # Polygon deploy script'i
+├── sui/proof_of_presence/ # SUI Move modülü — mint fonksiyonu (testnet'e deploy edildi, AdminCap ile korumalı)
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts
@@ -206,10 +206,14 @@ etkinleştirir.
 ```env
 DATABASE_URL="file:./dev.db"
 NEXT_PUBLIC_SUI_NETWORK="testnet"
-NEXT_PUBLIC_SUI_PACKAGE_ID="0x0"          # Move modülü deploy edilirse buraya
+NEXT_PUBLIC_SUI_PACKAGE_ID="0x…"          # .env.example'da testnet'teki gerçek paket tanımlı
+NEXT_PUBLIC_SUI_ADMIN_CAP_ID="0x…"        # mint için zincirde zorunlu yetki nesnesi
 NEXT_PUBLIC_PLATFORM_WALLET_ADDRESS="0x…" # ödemelerin gideceği adres
 NFT_STORAGE_KEY=""                        # boşsa IPFS yüklemesi taklit edilir
 ```
+
+Opsiyonel Polygon tarafı için `POLYGON_AMOY_RPC`, `PRIVATE_KEY`,
+`NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS` — bkz. [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 `.env` dosyası depoya dahil değildir ve olmamalıdır.
 

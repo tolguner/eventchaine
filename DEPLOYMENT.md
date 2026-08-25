@@ -1,12 +1,11 @@
 # Blockchain Deployment Rehberi
 
-> **SUI Move modülü (4. adım) testnet'e yayınlandı**, package ID
-> `.env.example`'da tanımlı — `NEXT_PUBLIC_SUI_PACKAGE_ID` boş bırakılmazsa
-> NFT mint gerçek çalışır. Polygon kontratı (3. adım) ise deploy edilmedi;
-> o taraf opsiyoneldir, proje SUI'yi ana zincir olarak kullanıyor. Bugün
-> nelerin gerçek, nelerin simülasyon olduğu için
-> [README](./README.md#blockchain-entegrasyonunun-gerçek-durumu) bölümüne
-> bakın.
+> **Hem SUI Move modülü (4. adım) hem Polygon kontratı (3. adım) testnet'e
+> yayınlandı**, adresler `.env.example`'da tanımlı — hiçbir şey deploy
+> etmeden gerçek NFT mint (SUI, ana zincir) ve opsiyonel EVM kontratını
+> (Polygon Amoy) deneyebilirsiniz. Bugün nelerin gerçek, nelerin simülasyon
+> olduğu için [README](./README.md#blockchain-entegrasyonunun-gerçek-durumu)
+> bölümüne bakın.
 
 ## 1️⃣ Environment Variables Ayarlama
 
@@ -61,42 +60,55 @@ curl --location --request POST 'https://faucet.testnet.sui.io/gas' \
 
 ## 3️⃣ Polygon Smart Contract Deploy (Opsiyonel)
 
-`contracts/ProofOfPresenceSBT.sol` derleniyor ve `scripts/deploy.js` mevcut;
-aşağıdaki adımlar gerçek bir cüzdan ve test MATIC ile çalışır.
+`contracts/ProofOfPresenceSBT.sol` derleniyor ve `scripts/deploy.js` mevcut.
+**Mumbai testnet Nisan 2024'te kapatıldı** — proje bunun yerine **Polygon
+Amoy**'u kullanıyor (`hardhat.config.ts`'teki `polygonAmoy` ağı, chain ID
+80002).
 
-### Gereksinimler
-- MetaMask cüzdanı
-- Polygon Mumbai test MATIC (https://mumbaifaucet.com/)
-- Private key (MetaMask'ten export edin)
+### Zaten yayınlanmış bir kontrat var
 
-### Deploy Adımları
-
-1. **Private Key'i .env'e Ekleyin**
-```bash
-PRIVATE_KEY="your-private-key-without-0x-prefix"
+```
+Adres:    0xc3DF1D336724616354f639f5e70367eB70E76806
+Ağ:       Polygon Amoy (chain ID 80002)
+Explorer: https://amoy.polygonscan.com/address/0xc3DF1D336724616354f639f5e70367eB70E76806
 ```
 
-2. **Contract'ı Compile Edin**
-```bash
-npx hardhat compile
-```
+`.env.example`'daki `NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS` bu adresi
+varsayılan olarak taşıyor. Kontratın `MINTER_ROLE`/`ADMIN_ROLE` yetkisi
+yalnızca onu deploy eden cüzdanda olduğu için, `mint`/`revoke` gibi
+fonksiyonları çağırmak isterseniz kendi kontratınızı deploy etmeniz gerekir
+(salt okunur çağrılar — `tokenURI`, `totalSupply`, `locked` — herkese açıktır).
 
-3. **Mumbai Testnet'e Deploy Edin**
-```bash
-npx hardhat run scripts/deploy.js --network polygonMumbai
-```
+### Kendi kontratınızı deploy etmek için
 
-4. **Contract Adresini Kaydedin**
-Deploy sonrası çıktıda gösterilen adresi `.env` dosyasına ekleyin:
-```bash
-NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS="0x..."
-NEXT_PUBLIC_POLYGON_CHAIN_ID="80001"
-```
+1. **`.env`'e RPC ve private key ekleyin**
 
-5. **Contract'ı Doğrulayın** (Opsiyonel)
-```bash
-npx hardhat verify --network polygonMumbai CONTRACT_ADDRESS
-```
+   Varsayılan `POLYGON_AMOY_RPC` (`rpc-amoy.polygon.technology`) bazı
+   ağlarda DNS çözümlemiyor; çözmüyorsa alternatif bir sağlayıcı kullanın:
+   ```bash
+   POLYGON_AMOY_RPC="https://polygon-amoy-bor-rpc.publicnode.com"
+   PRIVATE_KEY="0x ön eki olmadan private key"
+   ```
+   > `hardhat.config.ts` `dotenv/config` import ediyor; `.env`'deki
+   > değişiklikler her çalıştırmada otomatik yüklenir.
+
+2. **Test MATIC (POL) alın**
+
+   https://faucet.polygon.technology → ağ olarak **Polygon Amoy**, token
+   olarak **POL** seçin, cüzdan adresinizi girin. CAPTCHA/hesap doğrulaması
+   isteyebilir.
+
+3. **Deploy edin**
+   ```bash
+   npx hardhat run scripts/deploy.js --network polygonAmoy
+   ```
+
+4. **Contract adresini kaydedin**
+   Çıktıda gösterilen adresi `.env`'e yazın:
+   ```bash
+   NEXT_PUBLIC_POLYGON_CONTRACT_ADDRESS="0x..."
+   NEXT_PUBLIC_POLYGON_CHAIN_ID="80002"
+   ```
 
 ## 4️⃣ SUI Move Package Deploy
 
@@ -263,7 +275,7 @@ console.log('Explorer URL:', explorerUrl);
 ### Blockchain Explorer
 - **SUI Testnet**: https://suiscan.xyz/testnet
 - **SUI Mainnet**: https://suiscan.xyz/mainnet
-- **Polygon Mumbai**: https://mumbai.polygonscan.com
+- **Polygon Amoy**: https://amoy.polygonscan.com
 
 ### Hata Ayıklama
 ```bash
@@ -324,5 +336,7 @@ console.log('Explorer URL:', explorerUrl);
 
 ---
 
-Bu listedeki adımların tamamı uygulandığında sertifikalar gerçek Soulbound
-NFT olarak mint edilir. Projenin teslim edildiği hâlde bu adımlar tamamlanmamıştır.
+SUI (ana zincir) ve Polygon (opsiyonel) taraflarının ikisi de testnet'e
+yayınlandı; sertifikalar `.env.example`'daki varsayılan yapılandırmayla
+gerçek Soulbound NFT olarak mint ediliyor. Kendi paketinizi/kontratınızı
+deploy etmek isterseniz 3. ve 4. adımlardaki komutları izleyin.
