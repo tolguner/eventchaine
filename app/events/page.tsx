@@ -46,14 +46,20 @@ export default function EventsPage() {
     }
 
     // Tag filter
+    // API tags alanını dizi olarak döndürüyor; eski kayıtlar için JSON
+    // string ihtimalini de karşıla.
     if (filters.tag) {
       filtered = filtered.filter(e => {
-        try {
-          const tags = JSON.parse(e.tags || '[]');
-          return tags.includes(filters.tag);
-        } catch {
-          return false;
-        }
+        const tags = Array.isArray(e.tags)
+          ? e.tags
+          : (() => {
+              try {
+                return JSON.parse(e.tags || '[]');
+              } catch {
+                return [];
+              }
+            })();
+        return tags.includes(filters.tag);
       });
     }
 
