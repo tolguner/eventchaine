@@ -124,16 +124,19 @@ export async function POST(request: NextRequest) {
       });
 
       if (!existingCert) {
+        // Zincir alanları boş: bu noktada gerçek bir NFT mint edilmiyor,
+        // sahte tx_hash / token_id de üretmiyoruz. Admin panelinden
+        // cüzdanla mint edildiğinde kayıt gerçek değerlerle güncellenir.
         certificate = await prisma.certificate.create({
           data: {
             user_id,
             event_id,
             certificate_no: `CERT-${event_id.slice(-6)}-${user_id.slice(-6)}-${Date.now()}`,
-            ipfs_cid: `Qm${Math.random().toString(36).substring(2, 15)}`,
+            ipfs_cid: '',
             chain: 'Sui Testnet',
-            contract_address: '0x' + '0'.repeat(40),
-            token_id: `${Date.now()}`,
-            tx_hash: '0x' + Math.random().toString(36).substring(2, 15),
+            contract_address: process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0',
+            token_id: '',
+            tx_hash: '',
             minted_at: new Date()
           }
         });

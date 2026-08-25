@@ -7,7 +7,16 @@ const prisma = new PrismaClient();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { event_id } = body;
+    const {
+      event_id,
+      // Admin paneli gerçek bir mint yaptıysa sonucu buradan gönderir;
+      // bu alanlar geldiğinde yalnızca ilgili kullanıcının sertifikası yazılır.
+      user_id,
+      nft_token_id,
+      nft_tx_hash,
+      metadata_url,
+      blockchain,
+    } = body;
 
     // Admin kontrolü
     const authHeader = request.headers.get('Authorization');
@@ -43,6 +52,41 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Tek kullanıcı + gerçek mint sonucu gönderildiyse onu kaydet
+    if (user_id) {
+      const certificate = await prisma.certificate.upsert({
+        where: {
+          user_id_event_id: { user_id, event_id }
+        },
+        update: {
+          ipfs_cid: metadata_url || '',
+          chain: blockchain || 'Sui Testnet',
+          contract_address: process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0',
+          token_id: nft_token_id || '',
+          tx_hash: nft_tx_hash || '',
+        },
+        create: {
+          user_id,
+          event_id,
+          certificate_no: `CERT-${event_id.slice(-6)}-${user_id.slice(-6)}-${Date.now()}`,
+          ipfs_cid: metadata_url || '',
+          chain: blockchain || 'Sui Testnet',
+          contract_address: process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0',
+          token_id: nft_token_id || '',
+          tx_hash: nft_tx_hash || '',
+          minted_at: new Date()
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        event_title: event.title,
+        certificates_created: 1,
+        certificates_skipped: 0,
+        certificate_no: certificate.certificate_no
+      });
+    }
+
     // Check-in yapmış kullanıcıları bul
     const checkins = await prisma.checkIn.findMany({
       where: { event_id },
@@ -71,17 +115,20 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Yeni sertifika oluştur
+      // Yeni sertifika oluştur.
+      // Zincir alanları boş bırakılır: gerçek bir mint yapılmadan sahte
+      // tx_hash / token_id üretmiyoruz. Admin panelinden cüzdanla mint
+      // edildiğinde bu kayıt gerçek değerlerle güncellenir.
       const certificate = await prisma.certificate.create({
         data: {
           user_id: checkin.user_id,
           event_id,
           certificate_no: `CERT-${event_id.slice(-6)}-${checkin.user_id.slice(-6)}-${Date.now()}`,
-          ipfs_cid: `Qm${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+          ipfs_cid: '',
           chain: 'Sui Testnet',
-          contract_address: '0x' + '0'.repeat(40),
-          token_id: `${Date.now()}_${checkin.user_id.slice(-6)}`,
-          tx_hash: '0x' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+          contract_address: process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0',
+          token_id: '',
+          tx_hash: '',
           minted_at: new Date()
         },
         include: {

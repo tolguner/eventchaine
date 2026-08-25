@@ -87,18 +87,19 @@ export async function POST(
 
       const walletAddress = user.wallets[0].address;
 
-      // Create certificate record
-      // NFT mint işlemi simüle ediliyor - gerçek implementasyon için suiNFT.ts kullanılacak
+      // Sertifika kaydını oluştur. nft_data yalnızca admin panelinden
+      // cüzdanla gerçek mint yapıldığında dolu gelir; gelmediğinde zincir
+      // alanları boş bırakılır (sahte tx_hash / token_id üretilmez).
       const certificate = await prisma.certificate.create({
         data: {
           user_id: userId,
           event_id: params.id,
           certificate_no: generateCertificateNo(new Date().toISOString()),
-          ipfs_cid: nft_data?.ipfs_cid || `Qm${Math.random().toString(36).substring(2, 15)}`,
-          chain: 'SuiTestnet',
-          contract_address: process.env.NEXT_PUBLIC_NFT_PACKAGE_ID || '0x0',
-          token_id: nft_data?.objectId || `${Date.now()}_${userId}`,
-          tx_hash: nft_data?.txHash || `0x${Math.random().toString(16).substring(2, 66)}`,
+          ipfs_cid: nft_data?.ipfs_cid || '',
+          chain: 'Sui Testnet',
+          contract_address: process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0',
+          token_id: nft_data?.objectId || '',
+          tx_hash: nft_data?.txHash || '',
           minted_at: new Date(),
           revoked_at: null,
         },
