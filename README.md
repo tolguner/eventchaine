@@ -25,24 +25,20 @@ bölümüne bakın.
 **Çalışanlar**
 
 - SUI cüzdanı ile giriş/kayıt (Sui Wallet, Suiet, Wallet Standard)
-- Etkinlik listeleme ve detay sayfası; başlık/açıklama araması ve
+- Etkinlik listeleme ve detay sayfası; başlık/açıklama araması, etiket ve
   ücretsiz/ücretli filtresi
 - Etkinliğe kayıt; kapasite ve mükerrer kayıt kontrolü
 - HMAC-SHA256 imzalı QR bilet üretimi
 - Kamera ile QR okuyup check-in (admin paneli)
 - Etkinlik bitiminde check-in yapanlara toplu sertifika kaydı
 - Sertifika numarası veya tx hash ile herkese açık doğrulama sayfası (`/verify`)
-- Blog listeleme, detay ve otomatik görüntülenme sayacı
+- Blog listeleme, detay ve tekilleştirilmiş (çerez bazlı) görüntülenme sayacı
 - Profil yönetimi (ad, e-posta, öğrenci no, bölüm, sınıf)
-- Admin panosu: kayıt/check-in listeleri ve sayaçlar
+- Admin panosu: etkinlik ve blog CRUD, kayıt/check-in listeleri, sayaçlar
 - Açık/koyu tema
 
 **Eksik ya da yarım kalanlar**
 
-- Admin panelindeki **etkinlik ve blog oluşturma / düzenleme / silme yalnızca
-  ekrandaki listeyi değiştirir**, veritabanına yazmaz. Sayfa yenilenince eski
-  hâline döner. `POST /api/events` uç noktası var ama arayüz onu çağırmıyor;
-  güncelleme ve silme uçları hiç yazılmamış.
 - Ödeme akışı yalnızca SUI transferi yapar; USDC/USDT desteği yoktur.
 - Beacon ile check-in (`/api/checkin/beacon`) ve bilet sorgulama
   (`/api/tickets/[ticket_code]`) hâlâ eski bellek içi mock veriye bakıyor,
@@ -103,9 +99,9 @@ cüzdan bağlama ekranıdır.
 | Transaction imzalama | Gerçek | Cüzdan penceresinde onaylanır |
 | NFT mint | **Simülasyon** | Move modülü deploy edilmediği için `NEXT_PUBLIC_SUI_PACKAGE_ID` `0x0`'dır; bu durumda alıcıya 1 MIST gönderen demo transaction imzalanır, NFT oluşmaz |
 | IPFS metadata | **Simülasyon** | NFT.Storage anahtarı tanımlı değilse sahte bir CID üretilir |
-| Sertifika kaydı | **Simülasyon** | `auto-certificates` uç noktası `tx_hash`, `token_id` ve `ipfs_cid` alanlarını rastgele üretir; arayüzün gönderdiği gerçek mint sonuçlarını okumaz |
-| Zincirden doğrulama | Kısmi | `lib/verification.ts` gerçek `getObject` sorguları yapar, ancak kaydedilen object ID'ler gerçek olmadığı için pratikte sonuç dönmez |
-| Solidity kontratı | **Derlenmiyor** | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5'te kaldırılan `Counters.sol`'ü import ediyor; deploy script'i de yok |
+| Sertifika kaydı | Kısmi | Gerçek mint yapılmadığı sürece `tx_hash`, `token_id` ve `ipfs_cid` boş bırakılır (uydurma değer üretilmez). Admin panelinden cüzdanla mint edilirse `/api/events/auto-certificates` gerçek sonuçla günceller |
+| Zincirden doğrulama | Kısmi | `lib/verification.ts` gerçek `getObject` sorguları yapar, ancak object ID boş olduğu sürece pratikte sonuç dönmez |
+| Solidity kontratı | Derleniyor | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5 uyumlu (Counters.sol kaldırıldı); deploy edilmedi, `scripts/deploy.js` hâlâ yok |
 
 Kısacası: para transferi gerçek, sertifika mint'i değil. Bunu gerçek hâle
 getirmek için bir SUI Move modülü yazılıp deploy edilmesi ve package ID'sinin
@@ -137,7 +133,7 @@ eventchaine/
 │   ├── certificateImage.ts
 │   └── db.ts              # Eski bellek içi mock veri (2 route hâlâ kullanıyor)
 ├── contracts/
-│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derlenmiyor, deploy edilmedi)
+│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derleniyor, deploy edilmedi)
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts
@@ -154,7 +150,7 @@ eventchaine/
 
 **Etkinlikler**
 - `GET /api/events` — `tag`, `date`, `q` ile filtreleme
-- `POST /api/events` — yeni etkinlik (admin; arayüzden çağrılmıyor)
+- `POST /api/events`, `PUT /api/events/[id]`, `DELETE /api/events/[id]` — admin CRUD
 - `GET /api/events/[id]` — id veya slug ile detay
 - `POST /api/events/[id]/register` — kayıt ol
 
@@ -173,7 +169,7 @@ eventchaine/
 - `GET /api/me/profile`, `PUT /api/me/profile`
 - `GET /api/me/registrations`, `GET /api/me/certificates`
 - `GET /api/admin/registrations`, `GET /api/admin/checkins`, `GET /api/admin/wallet`
-- `GET /api/posts`, `GET /api/posts/[slug]` (görüntülenmeyi +1 artırır)
+- `GET /api/posts`, `POST /api/posts`, `GET/PUT/DELETE /api/posts/[slug]` (admin CRUD; GET görüntülenmeyi günde bir kez artırır)
 - `GET /api/stats`
 
 ## Veritabanı
@@ -194,20 +190,9 @@ npm run db:seed        # örnek veriyi yeniden yükle
 
 ## Bilinen sorunlar
 
-- Admin panelindeki etkinlik/blog ekleme, düzenleme ve silme kalıcı değil
-  (yukarıda "Eksik ya da yarım kalanlar" bölümüne bakın).
-- `POST /api/wallet/connect` adres uzunluğunu 42 karakter olarak doğruluyor; bu
-  EVM formatı. SUI adresleri 66 karakter olduğu için bu uç nokta SUI adreslerini
-  reddeder.
-- Etkinlikler sayfasındaki etiket filtresi hiçbir sonuç döndürmüyor: API `tags`
-  alanını zaten diziye çevirdiği hâlde arayüz bir kez daha `JSON.parse` etmeye
-  çalışıyor.
-- Blog görüntülenme sayacı her sayfa açılışında artıyor; oturum/çerez bazlı
-  tekilleştirme yok.
-- Seed verisindeki etkinliklerin tarihleri geçmişte kaldığı için ana sayfada
-  yaklaşan etkinlik görünmeyebilir.
-- `contracts/ProofOfPresenceSBT.sol` mevcut OpenZeppelin sürümüyle derlenmiyor.
 - QR tarayıcı mobil tarayıcılarda test edilmedi.
+- `contracts/ProofOfPresenceSBT.sol` deploy edilmedi; `scripts/deploy.js`
+  hâlâ yazılmadı (bkz. [DEPLOYMENT.md](./DEPLOYMENT.md)).
 
 ## Ortam değişkenleri
 

@@ -4,6 +4,24 @@ const prisma = new PrismaClient();
 
 const ADMIN_EMAIL = 'tolgaolguner1@gmail.com';
 
+/**
+ * Seed verisinin tarihleri seed'in çalıştığı güne göre üretilir; böylece
+ * örnek etkinliklerin bir kısmı her zaman gelecekte kalır.
+ * @param gunFarki bugüne göre gün farkı (negatif = geçmiş)
+ * @param baslangicSaati 24 saatlik biçimde başlangıç saati
+ * @param sureSaat etkinliğin kaç saat süreceği
+ */
+function tarih(gunFarki: number, baslangicSaati: number, sureSaat: number) {
+  const start = new Date();
+  start.setDate(start.getDate() + gunFarki);
+  start.setHours(baslangicSaati, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setHours(start.getHours() + sureSaat);
+
+  return { start_at: start, end_at: end };
+}
+
 const events = [
   {
     id: 'e_101',
@@ -11,8 +29,7 @@ const events = [
     slug: 'web3-pop-101',
     description:
       'Blockchain teknolojisi ve Proof of Presence (PoP) kavramına giriş. Soulbound NFT sertifikaları hakkında her şey.',
-    start_at: new Date('2025-12-12T14:00:00+03:00'),
-    end_at: new Date('2025-12-12T16:00:00+03:00'),
+    ...tarih(-45, 14, 2),
     location: 'Işık Üniversitesi, A Blok Konferans Salonu',
     capacity: 150,
     price: 0,
@@ -25,8 +42,7 @@ const events = [
     title: 'Smart Contract Geliştirme',
     slug: 'smart-contract-development',
     description: "Solidity ile akıllı kontrat yazımı ve Ethereum blockchain'e deploy etme.",
-    start_at: new Date('2025-12-20T14:00:00+03:00'),
-    end_at: new Date('2025-12-20T17:00:00+03:00'),
+    ...tarih(-20, 14, 3),
     location: 'Işık Üniversitesi, B Blok Lab',
     capacity: 80,
     price: 0.05,
@@ -40,8 +56,7 @@ const events = [
     slug: 'career-day-web3-startups',
     description:
       "Web3 alanında çalışan startup'lardan temsilcilerle networking ve kariyer fırsatları.",
-    start_at: new Date('2026-01-10T10:00:00+03:00'),
-    end_at: new Date('2026-01-10T18:00:00+03:00'),
+    ...tarih(7, 10, 8),
     location: 'Işık Üniversitesi, Merkez Kampüs',
     capacity: 200,
     price: 0,
@@ -54,8 +69,7 @@ const events = [
     title: 'NFT ve Dijital Sanat',
     slug: 'nft-digital-art',
     description: 'NFT teknolojisi, dijital sanat pazar yeri ve koleksiyon oluşturma.',
-    start_at: new Date('2026-01-15T15:00:00+03:00'),
-    end_at: new Date('2026-01-15T18:00:00+03:00'),
+    ...tarih(14, 15, 3),
     location: 'Işık Üniversitesi, Sanat Galerisi',
     capacity: 100,
     price: 0.1,
@@ -68,8 +82,7 @@ const events = [
     title: 'DeFi ve Kripto Finansı',
     slug: 'defi-crypto-finance',
     description: 'Merkezi olmayan finans (DeFi) protokolleri ve kripto para ekonomisi.',
-    start_at: new Date('2026-01-22T14:00:00+03:00'),
-    end_at: new Date('2026-01-22T17:00:00+03:00'),
+    ...tarih(21, 14, 3),
     location: 'Işık Üniversitesi, A Blok 301',
     capacity: 120,
     price: 0.02,
@@ -82,8 +95,7 @@ const events = [
     title: 'Blockchain Güvenliği',
     slug: 'blockchain-security',
     description: 'Akıllı kontrat güvenlik açıkları, audit süreçleri ve best practices.',
-    start_at: new Date('2026-02-05T13:00:00+03:00'),
-    end_at: new Date('2026-02-05T16:00:00+03:00'),
+    ...tarih(35, 13, 3),
     location: 'Online (Zoom)',
     capacity: 200,
     price: 0,
