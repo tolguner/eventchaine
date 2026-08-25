@@ -1,11 +1,12 @@
 # Blockchain Deployment Rehberi
 
-> **Bu bir yol haritasıdır, tamamlanmış bir kurulumun kaydı değil.** Aşağıdaki
-> adımlar proje kapsamında **uygulanmadı**: ne SUI Move modülü ne de Polygon
-> kontratı deploy edildi. Projenin blockchain tarafında bugün nelerin gerçek,
-> nelerin simülasyon olduğu için [README](./README.md#blockchain-entegrasyonunun-gerçek-durumu)
-> bölümüne bakın. Sertifikaların gerçek NFT olarak mint edilmesi için 4. adımdaki
-> Move modülünün deploy edilmesi gerekir.
+> **SUI Move modülü (4. adım) testnet'e yayınlandı**, package ID
+> `.env.example`'da tanımlı — `NEXT_PUBLIC_SUI_PACKAGE_ID` boş bırakılmazsa
+> NFT mint gerçek çalışır. Polygon kontratı (3. adım) ise deploy edilmedi;
+> o taraf opsiyoneldir, proje SUI'yi ana zincir olarak kullanıyor. Bugün
+> nelerin gerçek, nelerin simülasyon olduğu için
+> [README](./README.md#blockchain-entegrasyonunun-gerçek-durumu) bölümüne
+> bakın.
 
 ## 1️⃣ Environment Variables Ayarlama
 
@@ -145,6 +146,25 @@ Bu adımdan sonra `npm run dev` yeniden başlatılmalı; admin panelindeki
 "Sertifika Dağıt" artık demo transaction yerine gerçek `mint` çağrısı
 gönderir.
 
+### Zaten yayınlanmış bir paket var
+
+Bu modül testnet'e yayınlandı ve `.env.example`'da varsayılan olarak
+tanımlı:
+
+```
+Package ID: 0xc7b485ee652100ae668daeb6542415392e799bef8428e7c11855e4fc997d591b
+Ağ:         testnet
+Explorer:   https://suiscan.xyz/testnet/object/0xc7b485ee652100ae668daeb6542415392e799bef8428e7c11855e4fc997d591b
+```
+
+`.env` dosyanızda `NEXT_PUBLIC_SUI_PACKAGE_ID`'yi boş bırakmazsanız (veya
+`.env.example`'daki değeri kopyalarsanız) kendi paketinizi deploy etmeden bu
+paketle gerçek mint yapabilirsiniz. `mint` fonksiyonunda zincir üzerinde
+admin kısıtı yoktur (bkz. README → "Bilinen sorunlar"); bu, herkese açık bir
+testnet demosu için kabul edilebilir bir sadeleştirmedir. Kendi paketinizi
+deploy etmek isterseniz yukarıdaki adımları izleyip kendi Package ID'nizi
+kullanın.
+
 ## 5️⃣ Uygulamayı Test Edin
 
 ### Development Server'ı Başlatın
@@ -173,9 +193,9 @@ npm run dev
    - Cüzdan bağlı olmalı!
    - Transaction'ı onaylayın
    - TX hash'i console'da görünecek
-   - ⚠️ `NEXT_PUBLIC_SUI_PACKAGE_ID` hâlâ `0x0` ise gerçek bir NFT mint
-     edilmez; alıcıya 1 MIST gönderen bir demo transaction imzalanır.
-     Gerçek mint için önce 4. adımdaki Move modülü deploy edilmelidir.
+   - `NEXT_PUBLIC_SUI_PACKAGE_ID` `.env.example`'daki varsayılan değeri
+     kullanıyorsa (ya da boş bırakılmadıysa) bu gerçek bir mint'tir. `0x0`
+     yaparsanız alıcıya 1 MIST gönderen bir demo transaction'a düşer.
 
 4. **Blockchain Explorer'da Doğrulama**
    - Console'da görünen TX hash'i kopyalayın

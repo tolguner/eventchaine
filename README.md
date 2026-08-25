@@ -13,10 +13,12 @@ Uygulama kurulup çalıştırılabilir durumda: cüzdanla giriş, etkinlik liste
 kayıt olma, QR bilet üretme, QR ile check-in ve sertifika kayıtları veritabanı
 üzerinde uçtan uca çalışıyor.
 
-Blockchain tarafı ise **kısmen gerçek, kısmen simülasyondur.** Cüzdan bağlama,
-bakiye okuma, transaction imzalama ve SUI transferi gerçek zincir üzerinde
-çalışır; ancak projeye ait bir SUI Move modülü **hiçbir zaman deploy edilmedi.**
-Bu yüzden sertifikalar gerçek bir NFT olarak mint edilmez. Ayrıntılar için
+Blockchain tarafı da gerçek: cüzdan bağlama, bakiye okuma, SUI transferi ve
+NFT mint SUI testnet üzerinde çalışır. `proof_of_presence` Move modülü
+testnet'e yayınlandı (package ID `.env.example`'da tanımlı); admin panelinden
+"Sertifika Dağıt" dendiğinde gerçek bir `Certificate` nesnesi mint edilip
+alıcının cüzdanına gönderilir. IPFS metadata yükleme hâlâ opsiyoneldir — API
+anahtarı yoksa taklit edilir. Ayrıntılar için
 [Blockchain entegrasyonunun gerçek durumu](#blockchain-entegrasyonunun-gerçek-durumu)
 bölümüne bakın.
 
@@ -96,15 +98,17 @@ cüzdan bağlama ekranıdır.
 | Bakiye okuma | Gerçek | `suiClient.getBalance` |
 | SUI ödemesi | Gerçek | `splitCoins` + `transferObjects`, sonuç `waitForTransaction` ile doğrulanır |
 | Transaction imzalama | Gerçek | Cüzdan penceresinde onaylanır |
-| NFT mint | **Simülasyon** | Move modülü deploy edilmediği için `NEXT_PUBLIC_SUI_PACKAGE_ID` `0x0`'dır; bu durumda alıcıya 1 MIST gönderen demo transaction imzalanır, NFT oluşmaz |
+| NFT mint | Gerçek | `proof_of_presence` modülü testnet'e yayınlandı; `NEXT_PUBLIC_SUI_PACKAGE_ID` doluysa gerçek `Certificate` nesnesi mint edilip alıcıya transfer edilir. `.env.example`'daki değer, `.env` boş bırakılırsa bu paketi kullanır |
+| Soulbound kısıtı | Gerçek | `Certificate` struct'ında `store` yeteneği yok; mint dışında hiçbir adrese transfer edilemez (tip sisteminde zorunlu) |
+| Mint yetkisi | Kısıtsız | `mint` fonksiyonu herkese açık — zincir üzerinde admin kontrolü yok, yetkilendirme yalnızca uygulama katmanında (`/api/events/[id]/certificates/issue`) yapılıyor. Herkese açık bir testnet demosu için kabul edilebilir, mainnet için yetersiz |
 | IPFS metadata | **Simülasyon** | NFT.Storage anahtarı tanımlı değilse sahte bir CID üretilir |
-| Sertifika kaydı | Kısmi | Gerçek mint yapılmadığı sürece `tx_hash`, `token_id` ve `ipfs_cid` boş bırakılır (uydurma değer üretilmez). Admin panelinden cüzdanla mint edilirse `/api/events/auto-certificates` gerçek sonuçla günceller |
-| Zincirden doğrulama | Kısmi | `lib/verification.ts` gerçek `getObject` sorguları yapar, ancak object ID boş olduğu sürece pratikte sonuç dönmez |
-| Solidity kontratı | Derleniyor | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5 uyumlu (Counters.sol kaldırıldı); deploy edilmedi, `scripts/deploy.js` hâlâ yok |
+| Sertifika kaydı | Gerçek | Mint sonucu (`tx_hash`, `token_id`, `ipfs_cid`) `/api/events/auto-certificates` tarafından veritabanına yazılır; mint yapılmadıysa bu alanlar boş bırakılır (uydurma değer üretilmez) |
+| Zincirden doğrulama | Gerçek | `lib/verification.ts`, mint edilmiş gerçek object ID'ler için `getObject` ile zincirden okur |
+| Solidity kontratı | Derleniyor | `contracts/ProofOfPresenceSBT.sol` OpenZeppelin v5 uyumlu; `scripts/deploy.js` hazır ama Polygon'a deploy edilmedi (opsiyonel EVM tarafı, proje SUI'yi kullanıyor) |
 
-Kısacası: para transferi gerçek, sertifika mint'i değil. Bunu gerçek hâle
-getirmek için bir SUI Move modülü yazılıp deploy edilmesi ve package ID'sinin
-`.env`'e yazılması gerekir.
+Kısacası: para transferi ve sertifika mint'i ikisi de artık gerçek zincir
+işlemi. Eksik kalan tek parça isteğe bağlı Polygon/EVM tarafı ve IPFS
+yüklemesi (NFT.Storage API anahtarı gerektirir).
 
 ## Proje yapısı
 
@@ -192,8 +196,10 @@ npm run db:seed        # örnek veriyi yeniden yükle
 ## Bilinen sorunlar
 
 - QR tarayıcı mobil tarayıcılarda test edilmedi.
-- `contracts/ProofOfPresenceSBT.sol` deploy edilmedi; `scripts/deploy.js`
-  hâlâ yazılmadı (bkz. [DEPLOYMENT.md](./DEPLOYMENT.md)).
+- `contracts/ProofOfPresenceSBT.sol` (opsiyonel Polygon tarafı) deploy edilmedi.
+- Deploy edilen `proof_of_presence::mint` herkese açık; zincir üzerinde admin
+  kısıtı yok. Testnet demosu için kabul edilebilir, gerçek kullanım için
+  fonksiyona bir `AdminCap` eklenmesi gerekir.
 
 ## Ortam değişkenleri
 

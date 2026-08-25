@@ -27,6 +27,13 @@ module proof_of_presence::proof_of_presence {
     /// Yeni bir sertifika mint edip doğrudan alıcıya gönderir.
     /// Devredilemez olduğundan (soulbound) `store` yeteneği yoktur; alıcı
     /// dışında hiçbir adrese transfer edilemez.
+    ///
+    /// NOT: Bu fonksiyon herkese açıktır, zincir üzerinde bir yetki kontrolü
+    /// yapmaz — kim olursa olsun herhangi bir adrese sertifika mint
+    /// edebilir. Yetkilendirme uygulama katmanında yapılıyor
+    /// (/api/events/[id]/certificates/issue admin oturumu ister). Herkese
+    /// açık bir testnet demosu için kabul edilebilir bir sadeleştirme;
+    /// gerçek kullanım için mint'i bir AdminCap nesnesine bağlamak gerekir.
     public fun mint(
         recipient: address,
         event_title: String,
