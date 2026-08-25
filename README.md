@@ -38,15 +38,23 @@ bölümüne bakın.
 - Profil yönetimi (ad, e-posta, öğrenci no, bölüm, sınıf)
 - Admin panosu: etkinlik ve blog CRUD, kayıt/check-in listeleri, sayaçlar
 - Açık/koyu tema
+- Ödeme: SUI ve USDC (Circle'ın resmi testnet coin type'ı, `coinWithBalance`
+  ile); USDT desteklenmiyor, ayrıntı için aşağıya bakın
+- Beacon ile check-in: profildeki bilet kartında "Beacon ile Check-in (Demo)"
+  butonu — gerçek BLE donanımı yok, tarama simüle edilir, ama check-in
+  gerçekten veritabanına yazılır
+- Birim testleri: `lib/slug.ts`, `lib/crypto.ts`, `lib/validation.ts` için
+  (Vitest, `npm test`)
 
 **Eksik ya da yarım kalanlar**
 
-- Ödeme akışı yalnızca SUI transferi yapar; USDC/USDT desteği yoktur.
-- Beacon ile check-in için arayüzde bir ekran yok; `/api/checkin/beacon`
-  veritabanına bağlı ve çalışıyor, ama hiçbir sayfa çağırmıyor.
-- Şifreler hash'lenmiyor. Zaten şifreyle giriş yapılmıyor (giriş cüzdanla), ama
-  şema `password` alanını taşıyor.
-- Test yok.
+- **USDT desteklenmiyor.** Sui testnet'inde resmi/doğrulanmış bir USDT coin
+  type'ı yok — yalnızca kaynağı belirsiz, topluluk kaynaklı mock coin'ler
+  var. Uydurma bir adres kullanmak yerine bu para birimi bilinçli olarak
+  desteklenmedi (bkz. `lib/suiPayment.ts`). SUI ve USDC gerçek çalışıyor.
+- Testler yalnızca saf yardımcı fonksiyonları kapsıyor (slug üretimi, QR/
+  bilet imzalama, form doğrulama); API route'ları veya React bileşenleri
+  için test yok.
 
 ## Teknoloji
 
@@ -75,6 +83,12 @@ npm run dev
 `http://localhost:3000` adresinde açılır. Seed; bir admin kullanıcı, 6 örnek
 etkinlik ve 3 blog yazısı yükler.
 
+Testleri çalıştırmak için:
+
+```bash
+npm test
+```
+
 ### Giriş nasıl yapılır
 
 Uygulamada e-posta/şifre ile giriş **yoktur**; `/auth/signin` sayfası doğrudan
@@ -96,7 +110,7 @@ cüzdan bağlama ekranıdır.
 |---|---|---|
 | Cüzdan bağlama | Gerçek | dapp-kit üzerinden Wallet Standard |
 | Bakiye okuma | Gerçek | `suiClient.getBalance` |
-| SUI ödemesi | Gerçek | `splitCoins` + `transferObjects`, sonuç `waitForTransaction` ile doğrulanır |
+| Ödeme (SUI / USDC) | Gerçek | `coinWithBalance` ile ilgili coin type'tan otomatik seçim/parçalama, sonuç `waitForTransaction` ile doğrulanır. USDC coin type'ı Circle'ın resmi testnet adresi |
 | Transaction imzalama | Gerçek | Cüzdan penceresinde onaylanır |
 | NFT mint | Gerçek | `proof_of_presence` modülü testnet'e yayınlandı; `NEXT_PUBLIC_SUI_PACKAGE_ID` doluysa gerçek `Certificate` nesnesi mint edilip alıcıya transfer edilir. `.env.example`'daki değer, `.env` boş bırakılırsa bu paketi kullanır |
 | Soulbound kısıtı | Gerçek | `Certificate` struct'ında `store` yeteneği yok; mint dışında hiçbir adrese transfer edilemez (tip sisteminde zorunlu) |
@@ -128,9 +142,11 @@ eventchaine/
 ├── contexts/              # WalletContext, ThemeContext
 ├── lib/
 │   ├── prisma.ts          # Prisma istemcisi
-│   ├── crypto.ts          # Bilet kodu ve HMAC imzalı QR payload
-│   ├── suiNFT.ts          # NFT mint (Move modülü yoksa demo transaction)
-│   ├── suiPayment.ts      # SUI transferi ve bakiye
+│   ├── crypto.ts          # Bilet kodu ve HMAC imzalı QR payload (+ test)
+│   ├── slug.ts            # Türkçe karakter destekli URL slug'ı (+ test)
+│   ├── validation.ts      # Form doğrulama yardımcıları (+ test)
+│   ├── suiNFT.ts          # NFT mint (AdminCap ile korumalı gerçek mint)
+│   ├── suiPayment.ts      # SUI/USDC transferi ve bakiye
 │   ├── verification.ts    # Zincirden sertifika doğrulama
 │   ├── ipfs.ts            # NFT.Storage yükleme (anahtar yoksa sahte CID)
 │   └── certificateImage.ts
@@ -167,7 +183,7 @@ eventchaine/
 
 **Check-in**
 - `POST /api/checkin/qr` — QR ile check-in (admin cüzdanı doğrulanır)
-- `POST /api/checkin/beacon` — BLE beacon ile check-in (arayüzde çağıran ekran yok)
+- `POST /api/checkin/beacon` — BLE beacon ile check-in (simülasyon; profil sayfasından çağrılıyor)
 - `GET /api/tickets/[ticket_code]` — bilet koduyla kayıt sorgu
 
 **Profil / içerik / istatistik**
