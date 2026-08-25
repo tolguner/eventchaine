@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
  * @title ProofOfPresenceSBT
@@ -12,12 +11,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * Non-transferable NFTs that prove physical presence at events
  */
 contract ProofOfPresenceSBT is ERC721, ERC721URIStorage, AccessControl {
-    using Counters for Counters.Counter;
-
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    Counters.Counter private _tokenIdCounter;
+    uint256 private _nextTokenId;
 
     // Mapping from token ID to revoked status
     mapping(uint256 => bool) private _revoked;
@@ -46,8 +43,8 @@ contract ProofOfPresenceSBT is ERC721, ERC721URIStorage, AccessControl {
     {
         require(to != address(0), "Cannot mint to zero address");
         
-        uint256 tokenId = _tokenIdCounter.current();
-        _tokenIdCounter.increment();
+        uint256 tokenId = _nextTokenId;
+        _nextTokenId++;
         
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -152,7 +149,7 @@ contract ProofOfPresenceSBT is ERC721, ERC721URIStorage, AccessControl {
      * @dev Returns the total number of tokens minted
      */
     function totalSupply() public view returns (uint256) {
-        return _tokenIdCounter.current();
+        return _nextTokenId;
     }
 
     // Required overrides
