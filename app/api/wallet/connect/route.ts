@@ -37,10 +37,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate wallet address format (basic check)
-    if (!wallet_address.startsWith('0x') || wallet_address.length !== 42) {
+    // SUI adresleri 0x + 64 hex karakterdir (EVM'in 40 karakteri değil)
+    if (!/^0x[0-9a-fA-F]{64}$/.test(wallet_address)) {
       return NextResponse.json(
-        { error: 'Geçersiz cüzdan adresi formatı' },
+        { error: 'Geçersiz SUI cüzdan adresi formatı' },
         { status: 400 }
       );
     }
