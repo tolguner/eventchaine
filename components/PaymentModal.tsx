@@ -28,6 +28,8 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
   const [balance, setBalance] = useState<string>('0.0000');
   const [adminWallet, setAdminWallet] = useState<string>('');
 
+  const currency: 'SUI' | 'USDC' = event.currency === 'USDC' ? 'USDC' : 'SUI';
+
   useEffect(() => {
     if (currentAccount && isOpen) {
       loadBalance();
@@ -52,8 +54,8 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
 
   const loadBalance = async () => {
     if (!currentAccount) return;
-    
-    const { formattedBalance } = await getWalletBalance(suiClient, currentAccount.address);
+
+    const { formattedBalance } = await getWalletBalance(suiClient, currentAccount.address, currency);
     setBalance(formattedBalance);
   };
 
@@ -80,6 +82,7 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
           recipientAddress: adminWallet,
           eventId: event.id,
           eventTitle: event.title,
+          currency,
         }
       );
 
@@ -109,7 +112,7 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
           <div className="flex items-center justify-between">
             <span style={{ color: 'var(--text-secondary)' }}>Ödeme Tutarı:</span>
             <span className="text-2xl font-bold" style={{ color: 'var(--accent-primary)' }}>
-              {event.price} SUI
+              {event.price} {currency}
             </span>
           </div>
         </div>
@@ -120,7 +123,7 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Cüzdan Bakiyesi:</span>
               <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {balance} SUI
+                {balance} {currency}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -152,7 +155,11 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
           <ul className="text-xs space-y-1" style={{ color: 'var(--text-secondary)' }}>
             <li>• Ödeme Sui Testnet üzerinden yapılacak</li>
             <li>• İşlem blockchain'e kaydedilecek</li>
-            <li>• Gas ücretleri ödeme tutarına eklenir</li>
+            <li>
+              {currency === 'SUI'
+                ? '• Gas ücretleri ödeme tutarına eklenir'
+                : '• Gas ücreti cüzdanınızdaki SUI\'den ayrıca kesilir'}
+            </li>
             <li>• İşlem geri alınamaz</li>
           </ul>
         </div>
@@ -180,7 +187,7 @@ export function PaymentModal({ isOpen, onClose, event, onSuccess }: PaymentModal
             className="flex-1"
             disabled={isProcessing || !currentAccount}
           >
-            {isProcessing ? 'İşleniyor...' : `${event.price} SUI Öde`}
+            {isProcessing ? 'İşleniyor...' : `${event.price} ${currency} Öde`}
           </Button>
         </div>
 

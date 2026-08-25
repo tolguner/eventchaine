@@ -1158,7 +1158,6 @@ export default function AdminPage() {
               <option value="FREE">Ücretsiz</option>
               <option value="SUI">SUI</option>
               <option value="USDC">USDC</option>
-              <option value="USDT">USDT</option>
             </select>
           </div>
           <Input 

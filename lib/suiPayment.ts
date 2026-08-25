@@ -1,12 +1,29 @@
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
 import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
 
 export interface PaymentParams {
-  amount: number; // SUI cinsinden
+  amount: number; // seçilen para biriminin kendi birimi cinsinden (SUI ya da USDC)
   recipientAddress: string;
   eventId: string;
   eventTitle: string;
-  currency?: 'SUI' | 'USDC' | 'USDT';
+  currency?: 'SUI' | 'USDC';
+}
+
+// Circle'ın Sui testnet'teki resmi USDC coin type'ı.
+// https://developers.circle.com/stablecoins/quickstart-setup-transfer-usdc-sui
+const USDC_TESTNET_COIN_TYPE =
+  '0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC';
+
+const SUI_COIN_TYPE = '0x2::sui::SUI';
+
+// USDT için Sui testnet'inde resmi/doğrulanmış bir coin type yok — yalnızca
+// topluluk kaynaklı, kaynağı belirsiz mock coin'ler var. Uydurma bir adres
+// kullanmak yerine bu para birimi bilinçli olarak desteklenmiyor
+// (bkz. README → Bilinen sorunlar).
+function coinConfigFor(currency: 'SUI' | 'USDC') {
+  return currency === 'USDC'
+    ? { coinType: USDC_TESTNET_COIN_TYPE, decimals: 6 }
+    : { coinType: SUI_COIN_TYPE, decimals: 9 };
 }
 
 export interface PaymentResult {
@@ -35,8 +52,9 @@ export async function processSuiPayment(
 ): Promise<PaymentResult> {
   try {
     const { amount, recipientAddress, eventId, eventTitle, currency = 'SUI' } = params;
-    
-    console.log('💳 Processing SUI payment...');
+    const { coinType, decimals } = coinConfigFor(currency);
+
+    console.log('💳 Processing payment...');
     console.log('Amount:', amount, currency);
     console.log('From:', signer.address);
     console.log('To:', recipientAddress);
@@ -50,27 +68,30 @@ export async function processSuiPayment(
     // Cüzdan bakiyesi kontrolü
     const balance = await suiClient.getBalance({
       owner: signer.address,
-      coinType: '0x2::sui::SUI',
+      coinType,
     });
 
-    const balanceInSui = Number(balance.totalBalance) / 1_000_000_000;
-    console.log('Wallet balance:', balanceInSui, 'SUI');
+    const walletBalance = Number(balance.totalBalance) / 10 ** decimals;
+    console.log('Wallet balance:', walletBalance, currency);
 
-    if (balanceInSui < amount) {
-      throw new Error(`Yetersiz bakiye. Mevcut: ${balanceInSui.toFixed(4)} SUI, Gerekli: ${amount} SUI`);
+    if (walletBalance < amount) {
+      throw new Error(`Yetersiz bakiye. Mevcut: ${walletBalance.toFixed(4)} ${currency}, Gerekli: ${amount} ${currency}`);
     }
 
-    // Amount'u MIST'e çevir (1 SUI = 1,000,000,000 MIST)
-    const amountInMist = Math.floor(amount * 1_000_000_000);
+    // Amount'u coin'in en küçük birimine çevir (SUI: MIST/1e9, USDC: 1e6)
+    const amountInSmallestUnit = Math.floor(amount * 10 ** decimals);
 
     // GERÇEK Transaction oluştur
     const tx = new Transaction();
-    
-    // Split coin işlemi - ödeme tutarını gas coin'inden ayır
-    const [paymentCoin] = tx.splitCoins(tx.gas, [amountInMist]);
-    
-    // Transfer işlemi - platform cüzdanına gönder
-    tx.transferObjects([paymentCoin], recipientAddress);
+    tx.setSender(signer.address);
+
+    // coinWithBalance: SUI için gas coin'inden, USDC gibi diğer coin
+    // type'ları için cüzdandaki ilgili coin objelerinden otomatik seçip
+    // parçalıyor.
+    tx.transferObjects(
+      [coinWithBalance({ balance: amountInSmallestUnit, type: coinType })],
+      recipientAddress
+    );
 
     console.log('📝 Signing and executing payment transaction...');
     
@@ -172,22 +193,25 @@ export async function checkTransactionStatus(
 }
 
 /**
- * Cüzdan bakiyesini kontrol eder
+ * Cüzdan bakiyesini kontrol eder (varsayılan: SUI)
  */
 export async function getWalletBalance(
   suiClient: SuiClient,
-  address: string
+  address: string,
+  currency: 'SUI' | 'USDC' = 'SUI'
 ): Promise<{ balance: number; formattedBalance: string }> {
   try {
+    const { coinType, decimals } = coinConfigFor(currency);
     const balance = await suiClient.getBalance({
       owner: address,
+      coinType,
     });
 
-    const balanceInSui = parseInt(balance.totalBalance) / 1_000_000_000;
+    const walletBalance = Number(balance.totalBalance) / 10 ** decimals;
 
     return {
-      balance: balanceInSui,
-      formattedBalance: balanceInSui.toFixed(4),
+      balance: walletBalance,
+      formattedBalance: walletBalance.toFixed(4),
     };
   } catch (error) {
     console.error('Bakiye alınamadı:', error);
