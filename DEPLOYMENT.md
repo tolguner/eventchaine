@@ -60,10 +60,8 @@ curl --location --request POST 'https://faucet.testnet.sui.io/gas' \
 
 ## 3️⃣ Polygon Smart Contract Deploy (Opsiyonel)
 
-> ⚠️ Bu bölüm şu an olduğu gibi çalışmaz. `contracts/ProofOfPresenceSBT.sol`,
-> OpenZeppelin v5'te kaldırılmış olan `utils/Counters.sol`'ü import ettiği için
-> `npx hardhat compile` hata verir. Ayrıca aşağıda geçen `scripts/deploy.js`
-> dosyası depoda mevcut değildir; yazılması gerekir.
+`contracts/ProofOfPresenceSBT.sol` derleniyor ve `scripts/deploy.js` mevcut;
+aşağıdaki adımlar gerçek bir cüzdan ve test MATIC ile çalışır.
 
 ### Gereksinimler
 - MetaMask cüzdanı
@@ -99,76 +97,53 @@ NEXT_PUBLIC_POLYGON_CHAIN_ID="80001"
 npx hardhat verify --network polygonMumbai CONTRACT_ADDRESS
 ```
 
-## 4️⃣ SUI Move Package Deploy (Gelişmiş)
+## 4️⃣ SUI Move Package Deploy
 
-SUI blockchain'de NFT contract deploy etmek için:
+Modülün kaynak kodu ve testleri depoda hazır: `sui/proof_of_presence/`. `mint`
+fonksiyonunun argüman sırası `lib/suiNFT.ts`'teki `moveCall` çağrısıyla
+birebir eşleşiyor: `(recipient, event_title, participant_name, event_date,
+certificate_no, metadata_url)`. Sertifika nesnesinde `store` yeteneği yok;
+bu yüzden mint sonrası hiçbir adrese transfer edilemez (soulbound).
 
 ### Gereksinimler
 ```bash
-# Sui CLI yükleyin
-cargo install --locked --git https://github.com/MystenLabs/sui.git --branch mainnet sui
+# Sui CLI (Windows'ta hazır derlenmiş sürüm indirilebilir)
+# https://docs.sui.io/guides/developer/getting-started/sui-install
+sui --version
+
+sui client active-env      # testnet olmalı
+sui client active-address  # deploy edecek adres
 ```
 
-### Move Module Oluşturun
+Deploy eden adreste testnet SUI olmalı (bkz. 2. adımdaki faucet).
 
-`sui_modules/proof_of_presence/sources/certificate.move`:
+### Test
 
-```move
-module proof_of_presence::certificate {
-    use std::string::{Self, String};
-    use sui::object::{Self, UID};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
-    
-    /// Soulbound NFT - Transfer edilemez
-    struct Certificate has key {
-        id: UID,
-        name: String,
-        description: String,
-        event_title: String,
-        participant_name: String,
-        event_date: String,
-        certificate_no: String,
-        image_url: String,
-        is_soulbound: bool,
-    }
-    
-    /// Certificate mint fonksiyonu
-    public entry fun mint(
-        recipient: address,
-        event_title: vector<u8>,
-        participant_name: vector<u8>,
-        event_date: vector<u8>,
-        certificate_no: vector<u8>,
-        image_url: vector<u8>,
-        ctx: &mut TxContext
-    ) {
-        let certificate = Certificate {
-            id: object::new(ctx),
-            name: string::utf8(b"Proof of Presence Certificate"),
-            description: string::utf8(b"Event attendance certificate"),
-            event_title: string::utf8(event_title),
-            participant_name: string::utf8(participant_name),
-            event_date: string::utf8(event_date),
-            certificate_no: string::utf8(certificate_no),
-            image_url: string::utf8(image_url),
-            is_soulbound: true,
-        };
-        
-        // Soulbound - sadece recipient'a transfer
-        transfer::transfer(certificate, recipient);
-    }
-}
+```bash
+cd sui/proof_of_presence
+sui move test
 ```
+
+`mints_certificate_to_recipient` testi, mint sonrası sertifikanın alıcının
+adresine geçtiğini zincire çıkmadan doğrular.
 
 ### Package Deploy
-```bash
-# Testnet'e deploy
-sui client publish --gas-budget 100000000
 
-# Package ID'yi not alın ve .env'e ekleyin
+```bash
+cd sui/proof_of_presence
+sui client publish --gas-budget 100000000
+```
+
+Çıktıdaki `Published Objects` bölümünde `PackageID` olarak listelenen değeri
+kopyalayıp `.env`'e yazın:
+
+```bash
 NEXT_PUBLIC_SUI_PACKAGE_ID="0xPACKAGE_ID_HERE"
 ```
+
+Bu adımdan sonra `npm run dev` yeniden başlatılmalı; admin panelindeki
+"Sertifika Dağıt" artık demo transaction yerine gerçek `mint` çağrısı
+gönderir.
 
 ## 5️⃣ Uygulamayı Test Edin
 

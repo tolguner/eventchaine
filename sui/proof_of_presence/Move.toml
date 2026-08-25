@@ -1,0 +1,8 @@
+[package]
+name = "proof_of_presence"
+edition = "2024"
+
+[dependencies]
+
+[addresses]
+proof_of_presence = "0x0"

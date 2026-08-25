@@ -36,6 +36,9 @@ yarn-error.log*
 /cache
 /typechain-types
 
+# sui move build çıktısı
+sui/proof_of_presence/build
+
 # vercel
 .vercel
 
