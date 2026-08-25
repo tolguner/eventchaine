@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QRModal from '@/components/QRModal';
+import BeaconCheckin from '@/components/BeaconCheckin';
 import CertificateCard from '@/components/CertificateCard';
 import Badge from '@/components/Badge';
 import Button from '@/components/Button';
@@ -445,12 +446,15 @@ export default function ProfilePage() {
                           </p>
 
                           {reg.status === 'confirmed' && (
-                            <button
-                              onClick={() => setSelectedTicket(reg)}
-                              className="w-full py-2 bg-primary text-white rounded-xl hover:opacity-90 transition"
-                            >
-                              QR Bilet Göster
-                            </button>
+                            <div className="space-y-2">
+                              <button
+                                onClick={() => setSelectedTicket(reg)}
+                                className="w-full py-2 bg-primary text-white rounded-xl hover:opacity-90 transition"
+                              >
+                                QR Bilet Göster
+                              </button>
+                              <BeaconCheckin eventId={reg.event_id} userId={user.id} />
+                            </div>
                           )}
                         </div>
                       ))}
