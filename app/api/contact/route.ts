@@ -1,31 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateContactForm } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const name = (body.name || '').trim();
-    const email = (body.email || '').trim();
-    const message = (body.message || '').trim();
+    const validation = validateContactForm(body);
 
-    if (!name || !email || !message) {
-      return NextResponse.json(
-        { error: 'Ad, e-posta ve mesaj zorunludur' },
-        { status: 400 }
-      );
-    }
-
-    if (!EMAIL_RE.test(email)) {
-      return NextResponse.json(
-        { error: 'Geçersiz e-posta adresi' },
-        { status: 400 }
-      );
+    if (!validation.valid || !validation.data) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     await prisma.contactMessage.create({
-      data: { name, email, message },
+      data: validation.data,
     });
 
     return NextResponse.json({ success: true }, { status: 201 });
