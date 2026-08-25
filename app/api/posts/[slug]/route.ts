@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { slugify } from '@/lib/slug';
 
 const VIEW_COOKIE = 'viewed_posts';
 
@@ -120,7 +121,7 @@ export async function PUT(
       where: { id: post.id },
       data: {
         title,
-        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: slugify(title),
         excerpt: body.excerpt ?? post.excerpt,
         content: body.content ?? post.content,
         cover_url: body.cover_url ?? post.cover_url,

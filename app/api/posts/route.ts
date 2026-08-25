@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { slugify } from '@/lib/slug';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
     const post = await prisma.blogPost.create({
       data: {
         title: body.title,
-        slug: body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: slugify(body.title),
         excerpt: body.excerpt || '',
         content: body.content,
         cover_url: body.cover_url || '',

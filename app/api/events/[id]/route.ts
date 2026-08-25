@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { slugify } from '@/lib/slug';
 
 export async function GET(
   request: NextRequest,
@@ -105,7 +106,7 @@ export async function PUT(
       where: { id: event.id },
       data: {
         title,
-        slug: title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: slugify(title),
         description: body.description ?? event.description,
         start_at: body.start_at ? new Date(body.start_at) : event.start_at,
         end_at: body.end_at ? new Date(body.end_at) : event.end_at,
