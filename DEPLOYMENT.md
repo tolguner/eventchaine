@@ -152,18 +152,27 @@ Bu modül testnet'e yayınlandı ve `.env.example`'da varsayılan olarak
 tanımlı:
 
 ```
-Package ID: 0xc7b485ee652100ae668daeb6542415392e799bef8428e7c11855e4fc997d591b
-Ağ:         testnet
-Explorer:   https://suiscan.xyz/testnet/object/0xc7b485ee652100ae668daeb6542415392e799bef8428e7c11855e4fc997d591b
+Package ID:  0x0136e1afed0943d3efdb48c44db170131512b5695daa4456b635844ef7b0c190
+AdminCap ID: 0x8857320579ace3847330a41773214738cc8c20eeaa29c3640180d215d018c1ff
+Ağ:          testnet
+Explorer:    https://suiscan.xyz/testnet/object/0x0136e1afed0943d3efdb48c44db170131512b5695daa4456b635844ef7b0c190
 ```
 
-`.env` dosyanızda `NEXT_PUBLIC_SUI_PACKAGE_ID`'yi boş bırakmazsanız (veya
-`.env.example`'daki değeri kopyalarsanız) kendi paketinizi deploy etmeden bu
-paketle gerçek mint yapabilirsiniz. `mint` fonksiyonunda zincir üzerinde
-admin kısıtı yoktur (bkz. README → "Bilinen sorunlar"); bu, herkese açık bir
-testnet demosu için kabul edilebilir bir sadeleştirmedir. Kendi paketinizi
-deploy etmek isterseniz yukarıdaki adımları izleyip kendi Package ID'nizi
-kullanın.
+`mint` fonksiyonu bir `AdminCap` nesnesi ister; bu nesne yalnızca paketi
+yayınlayan cüzdanda bulunur. Bu yüzden yukarıdaki AdminCap ID **yalnızca o
+cüzdanla** (deploy'u yapan adres) çalışır — kendi admin cüzdanınızla gerçek
+mint yapmak isterseniz kendi paketinizi deploy etmeniz gerekir; o durumda
+`init()` yeni bir `AdminCap`'i sizin cüzdanınıza gönderir.
+
+Kendi paketinizi deploy etmek için yukarıdaki adımları izleyin, ardından:
+
+```bash
+sui client objects --owned-by <adresiniz>   # yeni AdminCap'in ID'sini bulun
+```
+
+çıktısındaki `proof_of_presence::AdminCap` nesnesinin ID'sini
+`NEXT_PUBLIC_SUI_ADMIN_CAP_ID`'ye, paket ID'sini `NEXT_PUBLIC_SUI_PACKAGE_ID`'ye
+yazın.
 
 ## 5️⃣ Uygulamayı Test Edin
 

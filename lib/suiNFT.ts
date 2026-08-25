@@ -25,6 +25,11 @@ export interface NFTMintResult {
 export const NFT_PACKAGE_ID = process.env.NEXT_PUBLIC_SUI_PACKAGE_ID || '0x0';
 export const NFT_MODULE_NAME = 'proof_of_presence';
 
+// mint() zincir üzerinde bir AdminCap nesnesi ister (yalnızca paketi
+// yayınlayan cüzdanda bulunur). Bu, yetkisiz cüzdanların NFT mint
+// edememesini zincir seviyesinde garanti eder.
+export const NFT_ADMIN_CAP_ID = process.env.NEXT_PUBLIC_SUI_ADMIN_CAP_ID || '';
+
 /**
  * GERÇEK SUI NFT Mint Fonksiyonu
  * SUI blockchain'de gerçek transaction oluşturur
@@ -54,11 +59,14 @@ export async function mintProofOfPresenceNFT(
     const tx = new Transaction();
     
     // GERÇEK SUI MOVE CONTRACT CALL
-    // Package deploy edildikten sonra bu fonksiyon çalışacak
-    if (NFT_PACKAGE_ID !== '0x0') {
+    // Package ve AdminCap yapılandırılmışsa gerçek mint çağrısı yapılır.
+    // mint() zincir üzerinde AdminCap nesnesi zorunlu kıldığı için, bu
+    // nesneye sahip olmayan bir cüzdan bu işlemi hiç imzalayamaz.
+    if (NFT_PACKAGE_ID !== '0x0' && NFT_ADMIN_CAP_ID) {
       tx.moveCall({
         target: `${NFT_PACKAGE_ID}::${NFT_MODULE_NAME}::mint`,
         arguments: [
+          tx.object(NFT_ADMIN_CAP_ID),
           tx.pure.address(recipientAddress),
           tx.pure.string(eventTitle),
           tx.pure.string(participantName),
@@ -68,9 +76,9 @@ export async function mintProofOfPresenceNFT(
         ],
       });
     } else {
-      // Package henüz deploy edilmemişse - demo transaction oluştur
-      console.warn('⚠️  NFT Package ID not configured. Creating demo transaction...');
-      
+      // Package veya AdminCap yapılandırılmamışsa - demo transaction oluştur
+      console.warn('⚠️  NFT Package ID veya AdminCap ID tanımlı değil. Demo transaction oluşturuluyor...');
+
       // Simple transfer transaction (demo amaçlı)
       const [coin] = tx.splitCoins(tx.gas, [1]); // 1 MIST (0.000000001 SUI)
       tx.transferObjects([coin], recipientAddress);

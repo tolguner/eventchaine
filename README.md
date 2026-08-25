@@ -100,7 +100,7 @@ cüzdan bağlama ekranıdır.
 | Transaction imzalama | Gerçek | Cüzdan penceresinde onaylanır |
 | NFT mint | Gerçek | `proof_of_presence` modülü testnet'e yayınlandı; `NEXT_PUBLIC_SUI_PACKAGE_ID` doluysa gerçek `Certificate` nesnesi mint edilip alıcıya transfer edilir. `.env.example`'daki değer, `.env` boş bırakılırsa bu paketi kullanır |
 | Soulbound kısıtı | Gerçek | `Certificate` struct'ında `store` yeteneği yok; mint dışında hiçbir adrese transfer edilemez (tip sisteminde zorunlu) |
-| Mint yetkisi | Kısıtsız | `mint` fonksiyonu herkese açık — zincir üzerinde admin kontrolü yok, yetkilendirme yalnızca uygulama katmanında (`/api/events/[id]/certificates/issue`) yapılıyor. Herkese açık bir testnet demosu için kabul edilebilir, mainnet için yetersiz |
+| Mint yetkisi | Gerçek | `mint` bir `AdminCap` nesnesi ister; bu nesne yalnızca paketi yayınlayan cüzdanda vardır. Nesne olmadan işlem hiç kurulamaz (`Expected 7 args, found 6`), yanlış tipte bir nesneyle denenirse zincir `TypeMismatch` ile reddeder. Uygulama katmanındaki oturum kontrolüne (`/api/events/[id]/certificates/issue`) ek, zincir seviyesinde ikinci bir güvence |
 | IPFS metadata | **Simülasyon** | NFT.Storage anahtarı tanımlı değilse sahte bir CID üretilir |
 | Sertifika kaydı | Gerçek | Mint sonucu (`tx_hash`, `token_id`, `ipfs_cid`) `/api/events/auto-certificates` tarafından veritabanına yazılır; mint yapılmadıysa bu alanlar boş bırakılır (uydurma değer üretilmez) |
 | Zincirden doğrulama | Gerçek | `lib/verification.ts`, mint edilmiş gerçek object ID'ler için `getObject` ile zincirden okur |
@@ -196,10 +196,6 @@ npm run db:seed        # örnek veriyi yeniden yükle
 ## Bilinen sorunlar
 
 - QR tarayıcı mobil tarayıcılarda test edilmedi.
-- `contracts/ProofOfPresenceSBT.sol` (opsiyonel Polygon tarafı) deploy edilmedi.
-- Deploy edilen `proof_of_presence::mint` herkese açık; zincir üzerinde admin
-  kısıtı yok. Testnet demosu için kabul edilebilir, gerçek kullanım için
-  fonksiyona bir `AdminCap` eklenmesi gerekir.
 
 ## Ortam değişkenleri
 
