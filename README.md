@@ -131,7 +131,10 @@ eventchaine/
 │   ├── ipfs.ts            # NFT.Storage yükleme (anahtar yoksa sahte CID)
 │   └── certificateImage.ts
 ├── contracts/
-│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derleniyor, deploy edilmedi)
+│   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derleniyor, deploy edilmedi; opsiyonel EVM tarafı)
+├── scripts/
+│   └── deploy.js          # Polygon deploy script'i (derlendi, çalıştırılmadı)
+├── sui/proof_of_presence/ # SUI Move modülü — mint fonksiyonu (derlendi, test edildi, deploy edilmedi)
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts
