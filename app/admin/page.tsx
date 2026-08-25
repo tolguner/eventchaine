@@ -292,106 +292,153 @@ export default function AdminPage() {
     }
   };
 
-  const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    if (editingEvent) {
-      // Düzenleme modu
-      const updatedEvent = {
-        ...editingEvent,
-        title: formData.get('title'),
-        slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        description: formData.get('description'),
-        start_at: formData.get('start_at'),
-        end_at: formData.get('end_at'),
-        location: formData.get('location'),
-        capacity: parseInt(formData.get('capacity') as string),
-        price: parseFloat(formData.get('price') as string) || 0,
-        currency: formData.get('currency') || 'FREE',
-        tags: (formData.get('tags') as string).split(',').map(t => t.trim()),
-        cover_url: formData.get('cover_url'),
-      };
-      setEvents(events.map(e => e.id === editingEvent.id ? updatedEvent : e));
-      alert('Etkinlik başarıyla güncellendi!');
-    } else {
-      // Yeni oluşturma modu
-      const newEvent = {
-        id: `e_${Date.now()}`,
-        title: formData.get('title'),
-        slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        description: formData.get('description'),
-        start_at: formData.get('start_at'),
-        end_at: formData.get('end_at'),
-        location: formData.get('location'),
-        capacity: parseInt(formData.get('capacity') as string),
-        price: parseFloat(formData.get('price') as string) || 0,
-        currency: formData.get('currency') || 'FREE',
-        tags: (formData.get('tags') as string).split(',').map(t => t.trim()),
-        cover_url: formData.get('cover_url'),
-        created_by: user.id,
-        is_published: true,
-      };
-      setEvents([...events, newEvent]);
-      alert('Etkinlik başarıyla oluşturuldu!');
-    }
-    
-    setShowEventModal(false);
-    setEditingEvent(null);
+  // Listeleri sunucudan tazeler; yazma işlemlerinden sonra çağrılır
+  const refreshEvents = async () => {
+    const res = await fetch('/api/events');
+    if (res.ok) setEvents(await res.json());
   };
 
-  const handleCreateBlog = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    if (editingBlog) {
-      // Düzenleme modu
-      const updatedBlog = {
-        ...editingBlog,
-        title: formData.get('title'),
-        slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        excerpt: formData.get('excerpt'),
-        content: formData.get('content'),
-        cover_url: formData.get('cover_url'),
-        category: formData.get('category'),
-        author: formData.get('author') || user.name,
-        // views değerini koruyoruz, müdahale etmiyoruz
-      };
-      setBlogs(blogs.map(b => b.id === editingBlog.id ? updatedBlog : b));
-      alert('Blog yazısı başarıyla güncellendi!');
-    } else {
-      // Yeni oluşturma modu
-      const newBlog = {
-        id: `b_${Date.now()}`,
-        title: formData.get('title'),
-        slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        excerpt: formData.get('excerpt'),
-        content: formData.get('content'),
-        cover_url: formData.get('cover_url'),
-        category: formData.get('category'),
-        created_at: new Date().toISOString(),
-        author: formData.get('author') || user.name,
-        views: 0,
-      };
-      setBlogs([...blogs, newBlog]);
-      alert('Blog yazısı başarıyla oluşturuldu!');
-    }
-    
-    setShowBlogModal(false);
-    setEditingBlog(null);
+  const refreshBlogs = async () => {
+    const res = await fetch('/api/posts');
+    if (res.ok) setBlogs(await res.json());
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    if (confirm('Bu etkinliği silmek istediğinizden emin misiniz?')) {
-      setEvents(events.filter(e => e.id !== eventId));
+  const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const token = localStorage.getItem('token');
+
+    const payload = {
+      title: formData.get('title'),
+      description: formData.get('description'),
+      start_at: formData.get('start_at'),
+      end_at: formData.get('end_at'),
+      location: formData.get('location'),
+      capacity: parseInt(formData.get('capacity') as string),
+      price: parseFloat(formData.get('price') as string) || 0,
+      currency: formData.get('currency') || 'FREE',
+      tags: (formData.get('tags') as string).split(',').map(t => t.trim()).filter(Boolean),
+      cover_url: formData.get('cover_url'),
+    };
+
+    try {
+      const res = await fetch(
+        editingEvent ? `/api/events/${editingEvent.id}` : '/api/events',
+        {
+          method: editingEvent ? 'PUT' : 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(`❌ ${data.error || 'İşlem başarısız'}`);
+        return;
+      }
+
+      await refreshEvents();
+      alert(editingEvent ? 'Etkinlik güncellendi!' : 'Etkinlik oluşturuldu!');
+      setShowEventModal(false);
+      setEditingEvent(null);
+    } catch (err) {
+      alert('❌ Sunucuya ulaşılamadı');
+    }
+  };
+
+  const handleCreateBlog = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const token = localStorage.getItem('token');
+
+    // views alanı gönderilmiyor; görüntülenme sayısına müdahale edilmiyor
+    const payload = {
+      title: formData.get('title'),
+      excerpt: formData.get('excerpt'),
+      content: formData.get('content'),
+      cover_url: formData.get('cover_url'),
+      category: formData.get('category'),
+      author: formData.get('author') || user.name,
+    };
+
+    try {
+      const res = await fetch(
+        editingBlog ? `/api/posts/${editingBlog.id}` : '/api/posts',
+        {
+          method: editingBlog ? 'PUT' : 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(`❌ ${data.error || 'İşlem başarısız'}`);
+        return;
+      }
+
+      await refreshBlogs();
+      alert(editingBlog ? 'Blog yazısı güncellendi!' : 'Blog yazısı oluşturuldu!');
+      setShowBlogModal(false);
+      setEditingBlog(null);
+    } catch (err) {
+      alert('❌ Sunucuya ulaşılamadı');
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!confirm('Bu etkinliği silmek istediğinizden emin misiniz?\n\nEtkinliğe ait kayıtlar, check-in\'ler ve sertifikalar da silinecek.')) return;
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(`❌ ${data.error || 'Etkinlik silinemedi'}`);
+        return;
+      }
+
+      await refreshEvents();
       alert('Etkinlik silindi!');
+    } catch (err) {
+      alert('❌ Sunucuya ulaşılamadı');
     }
   };
 
-  const handleDeleteBlog = (blogId: string) => {
-    if (confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) {
-      setBlogs(blogs.filter(b => b.id !== blogId));
+  const handleDeleteBlog = async (blogId: string) => {
+    if (!confirm('Bu blog yazısını silmek istediğinizden emin misiniz?')) return;
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const res = await fetch(`/api/posts/${blogId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(`❌ ${data.error || 'Blog yazısı silinemedi'}`);
+        return;
+      }
+
+      await refreshBlogs();
       alert('Blog yazısı silindi!');
+    } catch (err) {
+      alert('❌ Sunucuya ulaşılamadı');
     }
   };
 
