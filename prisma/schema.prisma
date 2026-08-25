@@ -14,7 +14,6 @@ model User {
   id                  String    @id @default(cuid())
   name                String
   email               String    @unique
-  password            String    @default("")
   student_no          String?
   department          String?
   class_year          Int?

@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
         data: {
           id: `u_${address.slice(0, 8)}`,
           email: newEmail,
-          password: '',
           name: 'Yeni Kullanıcı',
           role: 'user',
           wallets: {
@@ -94,12 +93,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Return all user fields except password
-    const { password: _, ...userWithoutPassword } = user;
-
     return NextResponse.json({
       token,
-      user: userWithoutPassword,
+      user,
     });
   } catch (error) {
     console.error('Wallet auth error:', error);

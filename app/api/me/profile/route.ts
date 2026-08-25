@@ -63,10 +63,8 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    const { password: _, ...userWithoutPassword } = updatedUser;
-
     return NextResponse.json({
-      user: userWithoutPassword
+      user: updatedUser
     });
   } catch (error) {
     console.error('Profile update error:', error);
@@ -108,10 +106,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { password: _, ...userWithoutPassword } = session.user;
-
     return NextResponse.json({
-      user: userWithoutPassword
+      user: session.user
     });
   } catch (error) {
     return NextResponse.json(
