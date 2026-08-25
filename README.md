@@ -40,9 +40,8 @@ bölümüne bakın.
 **Eksik ya da yarım kalanlar**
 
 - Ödeme akışı yalnızca SUI transferi yapar; USDC/USDT desteği yoktur.
-- Beacon ile check-in (`/api/checkin/beacon`) ve bilet sorgulama
-  (`/api/tickets/[ticket_code]`) hâlâ eski bellek içi mock veriye bakıyor,
-  veritabanına bağlanmadı.
+- Beacon ile check-in için arayüzde bir ekran yok; `/api/checkin/beacon`
+  veritabanına bağlı ve çalışıyor, ama hiçbir sayfa çağırmıyor.
 - Şifreler hash'lenmiyor. Zaten şifreyle giriş yapılmıyor (giriş cüzdanla), ama
   şema `password` alanını taşıyor.
 - Test yok.
@@ -130,8 +129,7 @@ eventchaine/
 │   ├── suiPayment.ts      # SUI transferi ve bakiye
 │   ├── verification.ts    # Zincirden sertifika doğrulama
 │   ├── ipfs.ts            # NFT.Storage yükleme (anahtar yoksa sahte CID)
-│   ├── certificateImage.ts
-│   └── db.ts              # Eski bellek içi mock veri (2 route hâlâ kullanıyor)
+│   └── certificateImage.ts
 ├── contracts/
 │   └── ProofOfPresenceSBT.sol   # ERC-721 SBT (derleniyor, deploy edilmedi)
 ├── prisma/
@@ -162,8 +160,8 @@ eventchaine/
 
 **Check-in**
 - `POST /api/checkin/qr` — QR ile check-in (admin cüzdanı doğrulanır)
-- `POST /api/checkin/beacon` — BLE beacon (mock veriye bağlı)
-- `GET /api/tickets/[ticket_code]` — bilet sorgu (mock veriye bağlı)
+- `POST /api/checkin/beacon` — BLE beacon ile check-in (arayüzde çağıran ekran yok)
+- `GET /api/tickets/[ticket_code]` — bilet koduyla kayıt sorgu
 
 **Profil / içerik / istatistik**
 - `GET /api/me/profile`, `PUT /api/me/profile`

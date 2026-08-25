@@ -1,88 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
-// POST /api/checkin/beacon - Check-in via Bluetooth beacon
+// POST /api/checkin/beacon - BLE beacon ile check-in
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { beacon_nonce, rssi, user_id, event_id } = body;
 
-    // Validate input
     if (!beacon_nonce || !user_id || !event_id) {
       return NextResponse.json(
-        { error: 'Missing required fields: beacon_nonce, user_id, event_id' },
+        { error: 'beacon_nonce, user_id ve event_id zorunludur' },
         { status: 400 }
       );
     }
 
-    // Validate RSSI (signal strength) - must be strong enough
-    const minRSSI = -70; // Minimum signal strength for proximity
+    // Sinyal gücü kontrolü - yakınlık için yeterince güçlü olmalı
+    const minRSSI = -70;
     if (rssi && rssi < minRSSI) {
       return NextResponse.json(
-        { error: 'Signal too weak. Please move closer to the beacon.' },
+        { error: 'Sinyal çok zayıf. Beacon\'a daha yakın durun.' },
         { status: 400 }
       );
     }
 
-    // Find the event
-    const event = db.events.find((e) => e.id === event_id);
+    // Beacon nonce formatını doğrula
+    if (!/^BEACON-[A-Z0-9]{8}$/.test(beacon_nonce)) {
+      return NextResponse.json(
+        { error: 'Geçersiz beacon nonce formatı' },
+        { status: 400 }
+      );
+    }
+
+    const event = await prisma.event.findUnique({ where: { id: event_id } });
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Etkinlik bulunamadı' }, { status: 404 });
     }
 
-    // Find the user
-    const user = db.users.find((u) => u.id === user_id);
+    const user = await prisma.user.findUnique({ where: { id: user_id } });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
 
-    // Check if user is registered for this event
-    const registration = db.registrations.find(
-      (r) => r.user_id === user_id && r.event_id === event_id
-    );
+    const registration = await prisma.registration.findFirst({
+      where: { user_id, event_id, status: 'confirmed' },
+    });
     if (!registration) {
       return NextResponse.json(
-        { error: 'User not registered for this event' },
+        { error: 'Kullanıcı bu etkinliğe kayıtlı değil' },
         { status: 403 }
       );
     }
 
-    // Check if already checked in
-    const existingCheckin = db.checkins.find(
-      (c) => c.user_id === user_id && c.event_id === event_id
-    );
+    const existingCheckin = await prisma.checkIn.findUnique({
+      where: { user_id_event_id: { user_id, event_id } },
+    });
     if (existingCheckin) {
       return NextResponse.json(
-        { error: 'Already checked in', checkin: existingCheckin },
+        { error: 'Zaten check-in yapılmış', checkin: existingCheckin },
         { status: 409 }
       );
     }
 
-    // Verify beacon nonce (in production, this would validate against stored beacons)
-    // Mock validation: just check if it's a valid format
-    if (!/^BEACON-[A-Z0-9]{8}$/.test(beacon_nonce)) {
-      return NextResponse.json(
-        { error: 'Invalid beacon nonce format' },
-        { status: 400 }
-      );
-    }
-
-    // Create check-in record
-    const checkin = {
-      id: `c_${Date.now()}`,
-      user_id,
-      event_id,
-      method: 'beacon' as const,
-      device_hash: beacon_nonce, // Using beacon nonce as device identifier
-      checkin_at: new Date().toISOString(),
-      verifier_id: 'system', // Automatic beacon verification
-    };
-
-    db.checkins.push(checkin);
+    const checkin = await prisma.checkIn.create({
+      data: {
+        user_id,
+        event_id,
+        method: 'beacon',
+        device_hash: beacon_nonce,
+        verifier_id: 'system', // otomatik beacon doğrulaması
+      },
+    });
 
     return NextResponse.json({
-      message: 'Check-in successful via beacon',
-      checkin,
+      message: 'Beacon ile check-in başarılı',
+      checkin: {
+        ...checkin,
+        checkin_at: checkin.checkin_at.toISOString(),
+      },
       event: {
         id: event.id,
         title: event.title,
@@ -95,7 +89,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Beacon check-in error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Sunucu hatası' },
       { status: 500 }
     );
   }
