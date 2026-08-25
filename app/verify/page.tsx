@@ -88,18 +88,18 @@ export default function VerifyPage() {
                   <h3 className="font-semibold text-ink mb-3">Sertifika Bilgileri</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Etkinlik:</span>
-                      <span className="font-medium">{certificate.event?.title}</span>
+                      <span className="text-gray-400">Etkinlik:</span>
+                      <span className="font-medium text-ink">{certificate.event?.title}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Tarih:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-400">Tarih:</span>
+                      <span className="font-medium text-ink">
                         {new Date(certificate.event?.start_at).toLocaleDateString('tr-TR')}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Sertifika No:</span>
-                      <span className="font-mono text-xs">{certificate.certificate?.certificate_no}</span>
+                      <span className="text-gray-400">Sertifika No:</span>
+                      <span className="font-mono text-xs text-ink">{certificate.certificate?.certificate_no}</span>
                     </div>
                   </div>
                 </div>
@@ -108,22 +108,22 @@ export default function VerifyPage() {
                   <h3 className="font-semibold text-ink mb-3">Blockchain Bilgileri</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Chain:</span>
-                      <span className="font-medium">{certificate.certificate?.chain}</span>
+                      <span className="text-gray-400">Chain:</span>
+                      <span className="font-medium text-ink">{certificate.certificate?.chain}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Token ID:</span>
-                      <span className="font-mono">{certificate.certificate?.token_id}</span>
+                      <span className="text-gray-400">Token ID:</span>
+                      <span className="font-mono text-ink">{certificate.certificate?.token_id}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Transaction Hash:</span>
-                      <span className="font-mono text-xs truncate max-w-[200px]">
+                      <span className="text-gray-400">Transaction Hash:</span>
+                      <span className="font-mono text-xs truncate max-w-[200px] text-ink">
                         {certificate.certificate?.tx_hash}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">IPFS CID:</span>
-                      <span className="font-mono text-xs truncate max-w-[200px]">
+                      <span className="text-gray-400">IPFS CID:</span>
+                      <span className="font-mono text-xs truncate max-w-[200px] text-ink">
                         {certificate.certificate?.ipfs_cid}
                       </span>
                     </div>
