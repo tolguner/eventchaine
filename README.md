@@ -176,11 +176,12 @@ eventchaine/
 - `GET /api/admin/registrations`, `GET /api/admin/checkins`, `GET /api/admin/wallet`
 - `GET /api/posts`, `POST /api/posts`, `GET/PUT/DELETE /api/posts/[slug]` (admin CRUD; GET görüntülenmeyi günde bir kez artırır)
 - `GET /api/stats`
+- `POST /api/contact` — iletişim formu mesajı gönder; `GET /api/contact` (admin) mesajları listeler
 
 ## Veritabanı
 
 SQLite, Prisma ile yönetilir. Modeller: `User`, `Wallet`, `Session`, `Event`,
-`Registration`, `CheckIn`, `Certificate`, `BlogPost`.
+`Registration`, `CheckIn`, `Certificate`, `BlogPost`, `ContactMessage`.
 
 `Event.tags` SQLite dizi desteklemediği için JSON string olarak saklanır.
 `CheckIn` ve `Certificate` üzerinde `user_id + event_id` bileşik unique kısıtı
