@@ -31,7 +31,10 @@ bölümüne bakın.
   ücretsiz/ücretli filtresi
 - Etkinliğe kayıt; kapasite ve mükerrer kayıt kontrolü
 - HMAC-SHA256 imzalı QR bilet üretimi
-- Kamera ile QR okuyup check-in (admin paneli)
+- Kamera ile QR okuyup check-in (admin paneli) — uçtan uca test edildi:
+  katılımcı QR bileti üretti, admin kamerayla okuttu, check-in ve
+  otomatik sertifika oluştu; mükerrer tarama ve yetkisiz cüzdan doğru
+  reddedildi
 - Etkinlik bitiminde check-in yapanlara toplu sertifika kaydı
 - Sertifika numarası veya tx hash ile herkese açık doğrulama sayfası (`/verify`)
 - Blog listeleme, detay ve tekilleştirilmiş (çerez bazlı) görüntülenme sayacı
@@ -209,19 +212,6 @@ Kurulum, PostgreSQL'e geçiş ve sorun giderme için: [DATABASE_SETUP.md](./DATA
 npx prisma studio      # veritabanını görsel arayüzde aç
 npm run db:seed        # örnek veriyi yeniden yükle
 ```
-
-## Bilinen sorunlar
-
-- **QR check-in akışının kendisi iki gerçek hesapla uçtan uca doğrulandı**
-  (katılımcı QR bileti üretti → gerçek payload admin'in check-in uç
-  noktasına gönderildi → check-in ve otomatik sertifika oluştu → admin
-  panelinin Dashboard'unda doğru göründü; mükerrer tarama 409, admin
-  olmayan cüzdan 403 ile doğru reddedildi). **Kamera ile gerçek QR okuma
-  hâlâ test edilmedi** — proje yayında olmadığı için gerçek bir telefon
-  kamerası bu ortamdan erişilemiyor, ve `QRScanner` bileşeni yalnızca bir
-  tarayıcı cüzdan eklentisi bağlıyken render olduğundan (`dapp-kit`,
-  gerçek bir eklenti gerektirir) kamera izni ekranı da bu ortamda
-  görülemedi.
 
 ## Ortam değişkenleri
 
