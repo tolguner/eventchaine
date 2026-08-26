@@ -212,7 +212,16 @@ npm run db:seed        # örnek veriyi yeniden yükle
 
 ## Bilinen sorunlar
 
-- QR tarayıcı mobil tarayıcılarda test edilmedi.
+- **QR check-in akışının kendisi iki gerçek hesapla uçtan uca doğrulandı**
+  (katılımcı QR bileti üretti → gerçek payload admin'in check-in uç
+  noktasına gönderildi → check-in ve otomatik sertifika oluştu → admin
+  panelinin Dashboard'unda doğru göründü; mükerrer tarama 409, admin
+  olmayan cüzdan 403 ile doğru reddedildi). **Kamera ile gerçek QR okuma
+  hâlâ test edilmedi** — proje yayında olmadığı için gerçek bir telefon
+  kamerası bu ortamdan erişilemiyor, ve `QRScanner` bileşeni yalnızca bir
+  tarayıcı cüzdan eklentisi bağlıyken render olduğundan (`dapp-kit`,
+  gerçek bir eklenti gerektirir) kamera izni ekranı da bu ortamda
+  görülemedi.
 
 ## Ortam değişkenleri
 
