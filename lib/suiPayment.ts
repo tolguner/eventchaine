@@ -16,10 +16,10 @@ const USDC_TESTNET_COIN_TYPE =
 
 const SUI_COIN_TYPE = '0x2::sui::SUI';
 
-// USDT için Sui testnet'inde resmi/doğrulanmış bir coin type yok — yalnızca
-// topluluk kaynaklı, kaynağı belirsiz mock coin'ler var. Uydurma bir adres
-// kullanmak yerine bu para birimi bilinçli olarak desteklenmiyor
-// (bkz. README → Bilinen sorunlar).
+// Desteklenen para birimleri SUI ve USDC. USDT eklenmedi: Sui testnet'inde
+// resmi/doğrulanmış bir USDT coin type'ı yok, yalnızca kaynağı belirsiz
+// topluluk mock coin'leri var — uydurma bir adres kullanmak yerine bu para
+// birimi kapsam dışı bırakıldı.
 function coinConfigFor(currency: 'SUI' | 'USDC') {
   return currency === 'USDC'
     ? { coinType: USDC_TESTNET_COIN_TYPE, decimals: 6 }

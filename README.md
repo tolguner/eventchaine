@@ -25,8 +25,6 @@ bölümüne bakın.
 
 ## Özellikler
 
-**Çalışanlar**
-
 - SUI cüzdanı ile giriş/kayıt (Sui Wallet, Suiet, Wallet Standard)
 - Etkinlik listeleme ve detay sayfası; başlık/açıklama araması, etiket ve
   ücretsiz/ücretli filtresi
@@ -42,19 +40,11 @@ bölümüne bakın.
 - Profil yönetimi (ad, e-posta, öğrenci no, bölüm, sınıf)
 - Admin panosu: etkinlik ve blog CRUD, kayıt/check-in listeleri, sayaçlar
 - Açık/koyu tema
-- Ödeme: SUI ve USDC (Circle'ın resmi testnet coin type'ı, `coinWithBalance`
-  ile); USDT desteklenmiyor, ayrıntı için aşağıya bakın
+- Ödeme: SUI ve USDC (Circle'ın resmi testnet coin type'ı, `coinWithBalance` ile)
 - Beacon ile check-in: profildeki bilet kartında "Beacon ile Check-in (Demo)"
   butonu — gerçek BLE donanımı yok, tarama simüle edilir, ama check-in
   gerçekten veritabanına yazılır
 - 52 otomatik test (Vitest, `npm test`) — ayrıntı için [Testler](#testler)
-
-**Eksik ya da yarım kalanlar**
-
-- **USDT desteklenmiyor.** Sui testnet'inde resmi/doğrulanmış bir USDT coin
-  type'ı yok — yalnızca kaynağı belirsiz, topluluk kaynaklı mock coin'ler
-  var. Uydurma bir adres kullanmak yerine bu para birimi bilinçli olarak
-  desteklenmedi (bkz. `lib/suiPayment.ts`). SUI ve USDC gerçek çalışıyor.
 
 ## Teknoloji
 
