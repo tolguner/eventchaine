@@ -4,8 +4,9 @@ Etkinlik kaydı, QR ile yoklama ve katılım sertifikası akışını tek yerde 
 Next.js uygulaması. Kimlik doğrulama SUI cüzdanı ile yapılır; sertifikalar
 Soulbound (devredilemez) NFT olarak tasarlanmıştır.
 
-Işık Üniversitesi'nde blockchain dersi kapsamında hazırlanmış, teslim edilmiş bir
-dönem projesidir. Aktif geliştirilen bir ürün değildir.
+Işık Üniversitesi'nde **Blok Zincir ve Kripto Para Teknolojileri** dersi
+kapsamında hazırlanmış, teslim edilmiş bir dönem projesidir. Aktif geliştirilen
+bir ürün değildir.
 
 ## Durum
 
@@ -46,8 +47,7 @@ bölümüne bakın.
 - Beacon ile check-in: profildeki bilet kartında "Beacon ile Check-in (Demo)"
   butonu — gerçek BLE donanımı yok, tarama simüle edilir, ama check-in
   gerçekten veritabanına yazılır
-- Birim testleri: `lib/slug.ts`, `lib/crypto.ts`, `lib/validation.ts` için
-  (Vitest, `npm test`)
+- 52 otomatik test (Vitest, `npm test`) — ayrıntı için [Testler](#testler)
 
 **Eksik ya da yarım kalanlar**
 
@@ -55,9 +55,6 @@ bölümüne bakın.
   type'ı yok — yalnızca kaynağı belirsiz, topluluk kaynaklı mock coin'ler
   var. Uydurma bir adres kullanmak yerine bu para birimi bilinçli olarak
   desteklenmedi (bkz. `lib/suiPayment.ts`). SUI ve USDC gerçek çalışıyor.
-- Testler yalnızca saf yardımcı fonksiyonları kapsıyor (slug üretimi, QR/
-  bilet imzalama, form doğrulama); API route'ları veya React bileşenleri
-  için test yok.
 
 ## Teknoloji
 
@@ -86,11 +83,25 @@ npm run dev
 `http://localhost:3000` adresinde açılır. Seed; bir admin kullanıcı, 6 örnek
 etkinlik ve 3 blog yazısı yükler.
 
-Testleri çalıştırmak için:
+### Testler
 
 ```bash
-npm test
+npm test          # tek seferlik
+npm run test:watch
 ```
+
+52 test, üç katmanı kapsıyor:
+
+| Katman | Dosyalar | Ne test ediliyor |
+|---|---|---|
+| Saf fonksiyonlar | `lib/slug.test.ts`, `lib/crypto.test.ts`, `lib/validation.test.ts` | Türkçe karakterli slug üretimi, QR imzalama/doğrulama (tamper ve süre dolumu dahil), form doğrulama |
+| API route'ları | `app/api/contact/`, `app/api/posts/`, `app/api/checkin/beacon/` | Yetkilendirme (401/403), iş kuralları (kapasite, mükerrer kayıt/check-in, 409), görüntülenme sayacının çerezle tekilleştirilmesi, admin'in `views` alanına müdahale edememesi |
+| React bileşeni | `components/BeaconCheckin.test.ts` | Başarı/hata/409 durumlarının arayüze yansıması, backend'in beklediği nonce formatı |
+
+API route testleri gerçek Prisma sorguları çalıştırır. Geliştirme
+veritabanını kirletmemek için ayrı bir `prisma/test.db` kullanılır; bu dosya
+test başında migration'larla oluşturulur ve test sonunda silinir
+(bkz. `vitest.global-setup.ts`).
 
 ### Giriş nasıl yapılır
 
@@ -237,4 +248,5 @@ Opsiyonel Polygon tarafı için `POLYGON_AMOY_RPC`, `PRIVATE_KEY`,
 
 MIT.
 
-Işık Üniversitesi IT&MIS Kulübü — blockchain dersi dönem projesi.
+Işık Üniversitesi IT&MIS Kulübü — Blok Zincir ve Kripto Para Teknolojileri
+dersi dönem projesi.
