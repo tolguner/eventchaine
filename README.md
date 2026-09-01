@@ -236,7 +236,7 @@ Opsiyonel Polygon tarafı için `POLYGON_AMOY_RPC`, `PRIVATE_KEY`,
 
 ## Lisans ve künye
 
-MIT.
+MIT — bkz. [LICENSE](LICENSE).
 
 Işık Üniversitesi IT&MIS Kulübü — Blok Zincir ve Kripto Para Teknolojileri
 dersi dönem projesi.
